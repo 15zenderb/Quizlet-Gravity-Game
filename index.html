@@ -11,14 +11,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             background-color: black;
             color: white;
             font-family: 'Courier New', monospace;
             text-align: center;
+            height: 100vh;
         }
         .container {
             position: relative;
+            width: 100%; /* Scale down to 90% of 1920px */
+            max-width: 1536px; /* Max width to 1920px */
+            height: 100%; /* Scale down to 90% of 1080px */
+            max-height: 864px; /* Max height to 1080px */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         .background {
             position: fixed;
@@ -26,7 +33,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('assets/images/Astronaut_background.jpg') no-repeat center center/cover;
+            background: url('https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg') no-repeat center center/cover;
             z-index: -1;
         }
         .menu {
@@ -41,6 +48,41 @@
             font-size: 36px;
             font-family: Arial, sans-serif;
         }
+
+        /* Responsive Design for smaller screens */
+        @media (max-width: 1920px) {
+            .container {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            h1 {
+                font-size: 60px;
+            }
+            p {
+                font-size: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 48px;
+            }
+            p {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 32px;
+            }
+            p {
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -53,7 +95,7 @@
     </div>
 
     <script>
-        const music = new Audio("assets/sounds/start_screen_music.wav");  // Use the WAV file in your project folder
+        const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");  // Raw GitHub URL
         music.loop = true;
 
         // Allow user interaction to enable playback
@@ -75,7 +117,7 @@
 
         function startGame() {
             console.log("Game Starting...");
-            const gameMusic = new Audio("assets/sounds/game_music.mp3");  // You can replace this with another music file for the game
+            const gameMusic = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/game_music.mp3");  // Link to another music file for the game
             gameMusic.play();
             // Add game start logic here
         }
