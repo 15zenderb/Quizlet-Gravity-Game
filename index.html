@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Quiz Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+        .container {
+            position: relative;
+        }
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('assets/images/Astronaut_background.jpg') no-repeat center center/cover;
+            z-index: -1;
+        }
+        .menu {
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            font-size: 72px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        p {
+            font-size: 36px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="container menu">
+        <h1>Galactic Recall Quiz Game</h1>
+        <p>Press 'Enter' to Start</p>
+        <p>Press 'Esc' to Quit</p>
+        <p>Press 'S' for Settings</p>
+    </div>
+
+    <script>
+        const music = new Audio("assets/sounds/start_screen_music.wav");  // Use the WAV file in your project folder
+        music.loop = true;
+
+        // Allow user interaction to enable playback
+        document.body.addEventListener("click", () => {
+            if (music.paused) {
+                music.play().catch(error => console.log("User interaction required for audio playback."));
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                startGame();
+            } else if (event.key === "Escape") {
+                quitGame();
+            } else if (event.key.toLowerCase() === "s") {
+                openSettings();
+            }
+        });
+
+        function startGame() {
+            console.log("Game Starting...");
+            const gameMusic = new Audio("assets/sounds/game_music.mp3");  // You can replace this with another music file for the game
+            gameMusic.play();
+            // Add game start logic here
+        }
+
+        function quitGame() {
+            console.log("Game Quit");
+            window.close();
+        }
+
+        function openSettings() {
+            console.log("Open Settings");
+            // Add settings menu logic here
+        }
+    </script>
+</body>
+</html>
