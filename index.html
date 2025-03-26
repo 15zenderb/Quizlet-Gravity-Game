@@ -7,130 +7,182 @@
     <style>
         body {
             margin: 0;
-            overflow: hidden;
+            font-family: 'Courier New', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
             background-color: black;
             color: white;
-            font-family: 'Courier New', monospace;
-            text-align: center;
+        }
+        .screen {
+            position: absolute;
+            width: 100vw;
             height: 100vh;
-        }
-        .container {
-            position: relative;
-            width: 100%; /* Scale down to 90% of 1920px */
-            max-width: 1536px; /* Max width to 1920px */
-            height: 100%; /* Scale down to 90% of 1080px */
-            max-height: 864px; /* Max height to 1080px */
-            padding: 20px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg') no-repeat center center/cover;
-            z-index: -1;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
         .menu {
-            position: relative;
-            z-index: 1;
+            background: url('https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg') no-repeat center center/cover;
+            display: flex;
+        }
+        .game {
+            background-color: black;
+        }
+        .settings {
+            background-color: red;
+        }
+        .menu-option, .main-menu {
+            font-size: 36px;
+            cursor: pointer;
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .menu-option:hover, .main-menu:hover {
+            color: yellow;
+        }
+        .main-menu {
+            position: absolute;
+            top: 20px;
+            left: 20px;
         }
         h1 {
             font-size: 72px;
             font-family: 'Comic Sans MS', cursive;
+            margin-bottom: 50px;
         }
-        p {
-            font-size: 36px;
-            font-family: Arial, sans-serif;
-        }
-
-        /* Responsive Design for smaller screens */
-        @media (max-width: 1920px) {
-            .container {
-                width: 100%;
-                height: 100%;
-            }
-        }
-
-        @media (max-width: 1200px) {
-            h1 {
-                font-size: 60px;
-            }
-            p {
-                font-size: 30px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 48px;
-            }
-            p {
-                font-size: 24px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 32px;
-            }
-            p {
-                font-size: 18px;
-            }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="container menu">
+    <div id="menuScreen" class="screen menu" style="display: flex;">
         <h1>Galactic Recall Quiz Game</h1>
-        <p>Press 'Enter' to Start</p>
-        <p>Press 'Esc' to Quit</p>
-        <p>Press 'S' for Settings</p>
+        <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
+        <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
+        <div class="menu-option" onclick="quitGame()">Quit</div>
     </div>
 
-    <script>
-        const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");  // Raw GitHub URL
-        music.loop = true;
+    <div id="gameScreen" class="screen game">
+        <canvas id="asteroidCanvas"></canvas>
+        <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+    </div>
 
-        // Allow user interaction to enable playback
+    <div id="settingsScreen" class="screen settings">
+    <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+    <h1 style="margin-bottom: 30px;">Settings</h1>
+    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 60%; max-width: 800px;">
+        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
+            <span class="setting-label">Lives</span>
+            <span class="setting-value">[ 3 ]</span>
+        </div>
+        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
+            <span class="setting-label">Levels Enabled</span>
+            <span class="setting-value">[ Yes ]</span>
+        </div>
+        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
+            <span class="setting-label">Questions Per Level</span>
+            <span class="setting-value">[ 10 ]</span>
+        </div>
+        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
+            <span class="setting-label">Fall Speed</span>
+            <span class="setting-value">[ 50 ]</span>
+        </div>
+        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
+            <span class="setting-label">Volume</span>
+            <span class="setting-value">[ 100% ]</span>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");
+        const ambiance = new Audio("https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true");
+        music.loop = true;
+        ambiance.loop = true;
+
         document.body.addEventListener("click", () => {
-            if (music.paused) {
+            if (music.paused && !gameStarted) {
                 music.play().catch(error => console.log("User interaction required for audio playback."));
             }
         });
 
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-                startGame();
-            } else if (event.key === "Escape") {
-                quitGame();
-            } else if (event.key.toLowerCase() === "s") {
-                openSettings();
-            }
-        });
+        let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
+        asteroidImg.src = "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true";
 
-        function startGame() {
-            console.log("Game Starting...");
-            const gameMusic = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/game_music.mp3");  // Link to another music file for the game
-            gameMusic.play();
-            // Add game start logic here
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
+            document.getElementById(screenId).style.display = 'flex';
+
+            if (screenId === 'gameScreen') {
+                gameStarted = true;
+                music.pause();
+                ambiance.play();
+                startAsteroids();
+            } else {
+                gameStarted = false;
+                ambiance.pause();
+                music.play();
+            }
         }
 
         function quitGame() {
-            console.log("Game Quit");
+            window.open('', '_self', '');
             window.close();
         }
 
-        function openSettings() {
-            console.log("Open Settings");
-            // Add settings menu logic here
+        function startAsteroids() {
+            canvas = document.getElementById("asteroidCanvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx = canvas.getContext("2d");
+            asteroid = null;
+            cancelAnimationFrame(animationId);
+            requestAnimationFrame(updateAsteroids);
         }
+
+        function createAsteroid() {
+            return {
+                x: Math.random() * canvas.width,
+                y: -50,
+                size: 400, // All asteroids are now the same large size
+                speed: Math.random() * 3 + 2
+            };
+        }
+
+        function updateAsteroids() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!asteroid) {
+                asteroid = createAsteroid();
+            }
+
+            if (asteroid) {
+                asteroid.y += asteroid.speed;
+                ctx.drawImage(asteroidImg, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+
+                if (asteroid.y > canvas.height) {
+                    asteroid = null;
+                }
+            }
+
+            animationId = requestAnimationFrame(updateAsteroids);
+        }
+
+        window.addEventListener('resize', () => {
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
     </script>
 </body>
 </html>
