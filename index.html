@@ -130,7 +130,7 @@
             <div class="setting-item">
                 <span class="setting-label">Fall Speed</span>
                 <span class="setting-value">
-                    <input type="range" min="0.1" max="5" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
+                    <input type="range" min="0.1" max="150" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
                 </span>
             </div>
             <div class="setting-item">
@@ -151,6 +151,7 @@
 
     <script>
         const ASSETS = {
+  win: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/Win.wav?raw=true",
   explosion: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/explosion.wav?raw=true",
   correct: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/correct.mp3?raw=true",
   incorrect: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/incorrect.mp3?raw=true",
@@ -380,6 +381,7 @@ let silenceTimer = null;
     if (asteroidBottom >= textBoxTopRelativeToCanvas && document.getElementById('gameScreen').style.display === 'flex') {
       new Audio(ASSETS.explosion).play();
       lives--;
+      missedAnswers.push({ question: quizData[currentIndex].question, answer: quizData[currentIndex].answer });
       document.getElementById("lives").innerText = lives;
       isPaused = true;
       ctx.fillStyle = "red";
@@ -387,12 +389,18 @@ let silenceTimer = null;
       ctx.fillText("-1 Life", canvas.width / 2, canvas.height / 2);
       ctx.fillStyle = "white";
       ctx.fillText("Correct answer was: " + quizData[currentIndex].answer, canvas.width / 2, canvas.height / 2 + 40);
-      setTimeout(() => {
-        isPaused = false;
-        currentIndex = (currentIndex + 1) % quizData.length;
-        nextQuestion();
-        requestAnimationFrame(updateAsteroids);
-      }, 2000);
+      if (lives <= 0) {
+        new Audio(ASSETS.win).play();
+        document.getElementById('gameScreen').style.display = 'none';
+        showGameOver();
+      } else {
+        setTimeout(() => {
+          isPaused = false;
+          currentIndex = (currentIndex + 1) % quizData.length;
+          nextQuestion();
+          requestAnimationFrame(updateAsteroids);
+        }, 2000);
+      }
     }
             }
 
@@ -432,6 +440,7 @@ function handleCSVUpload(event) {
 }
 let score = 0;
 let lives = 3;
+let missedAnswers = [];
 let currentIndex = 0;
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
@@ -458,6 +467,92 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
     }
   }
 });
+
+function showGameOver() {
+  const overlay = document.createElement("div");
+  overlay.className = "screen settings";
+  overlay.style.position = "absolute";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100vw";
+  overlay.style.height = "100vh";
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.padding = "20px";
+  overlay.style.boxSizing = "border-box";
+  overlay.style.overflowY = "auto";
+
+  const msg = document.createElement("div");
+  msg.className = '';
+  msg.style.fontSize = "6vw";
+  msg.style.marginBottom = "20px";
+  msg.innerText = `Game Over! Final Score: ${score}`;
+
+  const menu = document.createElement("div");
+  menu.className = 'menu-option';
+  menu.innerText = "Main Menu";
+  menu.onclick = () => {
+    document.body.removeChild(overlay);
+    showScreen('menuScreen');
+  };
+
+  const retry = document.createElement("div");
+  retry.className = 'menu-option';
+  retry.innerText = "Retry";
+  retry.onclick = () => {
+    document.body.removeChild(overlay);
+    lives = 3;
+    score = 0;
+    currentIndex = 0;
+    document.getElementById("lives").innerText = lives;
+    document.getElementById("score").innerText = score;
+    showScreen('gameScreen');
+  };
+
+  const missedHeader = document.createElement("div");
+  missedHeader.innerText = "Incorrect Answers:";
+  missedHeader.style.color = "white";
+  missedHeader.style.fontSize = "24px";
+  missedHeader.style.marginTop = "30px";
+  missedHeader.style.fontFamily = "'Courier New', monospace";
+
+  overlay.appendChild(msg);
+  overlay.appendChild(menu);
+  overlay.appendChild(retry);
+  overlay.appendChild(missedHeader);
+
+  missedAnswers.forEach((item, index) => {
+    const miss = document.createElement("div");
+    miss.innerText = `${index + 1}. ${item.question} → ${item.answer}`;
+    miss.style.color = index % 2 === 0 ? "red" : "darkred";
+    miss.style.fontFamily = "'Courier New', monospace";
+    miss.style.fontSize = "20px";
+    miss.style.margin = "5px";
+    overlay.appendChild(miss);
+  });
+
+  document.body.appendChild(overlay);
+
+  function handleEndKeys(e) {
+    if (e.key === 'Enter') {
+      document.body.removeChild(overlay);
+      lives = 3;
+      score = 0;
+      currentIndex = 0;
+      document.getElementById("lives").innerText = lives;
+      document.getElementById("score").innerText = score;
+      showScreen('gameScreen');
+    } else if (e.key === 'Escape') {
+      document.body.removeChild(overlay);
+      showScreen('menuScreen');
+    }
+  }
+
+  document.addEventListener("keydown", handleEndKeys);
+}
+
 
 </script>
 
