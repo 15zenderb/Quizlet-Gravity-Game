@@ -23,7 +23,7 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            padding: 20px;
+            padding: 5px;
             box-sizing: border-box;
         }
         .menu {
@@ -31,12 +31,12 @@
             display: flex;
         }
         .game {
-            background-color: black;
+            background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true') no-repeat center center/cover;
         }
         .settings {
             background-color: black;
         }
-        .menu-option, .main-menu {
+               .menu-option, .main-menu {
             font-size: 5vw;
             cursor: pointer;
             margin: 2vh;
@@ -58,11 +58,6 @@
             margin-bottom: 5vh;
             text-align: center;
         }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -71,6 +66,7 @@
             padding: 15px 20px;
             border-radius: 12px;
             font-size: 4vw;
+            font-family: 'Courier New', monospace;
         }
         .setting-label, .setting-value {
             display: inline-block;
@@ -122,7 +118,9 @@
             </div>
             <div class="setting-item">
                 <span class="setting-label">Fall Speed</span>
-                <span class="setting-value">[ 50 ]</span>
+<span class="setting-value">
+    <input type="range" min="0.1" max="5" step="0.1" value="1" onchange="updateFallSpeed(this.value)" style="width: 150px;">
+</span>
             </div>
             <div class="setting-item">
                 <span class="setting-label">Volume</span>
@@ -132,6 +130,8 @@
     </div>
 
     <script>
+        const preloadGameBg = new Image();
+        preloadGameBg.src = "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true";
         const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");
         const ambiance = new Audio("https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true");
         music.loop = true;
@@ -144,6 +144,7 @@
         });
 
         let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
+let fallSpeedMultiplier = 1;
         asteroidImg.src = "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true";
 
         function showScreen(screenId) {
@@ -164,7 +165,11 @@
             }
         }
 
-        function quitGame() {
+        function updateFallSpeed(value) {
+    fallSpeedMultiplier = parseFloat(value);
+}
+
+function quitGame() {
             window.open('', '_self', '');
             window.close();
         }
@@ -184,7 +189,7 @@
                 x: Math.random() * canvas.width,
                 y: -50,
                 size: 400,
-                speed: Math.random() * 3 + 2
+                speed: (Math.random() * 3 + 2) * fallSpeedMultiplier
             };
         }
 
