@@ -96,6 +96,7 @@
     </div>
 
     <div id="gameScreen" class="screen game">
+        <div class="main-menu" style="top: 70px; left: 20px;" onclick="pauseGame()">Pause</div>
         <canvas id="asteroidCanvas"></canvas>
         <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
     </div>
@@ -123,17 +124,32 @@
 </span>
             </div>
             <div class="setting-item">
-                <span class="setting-label">Volume</span>
-                <span class="setting-value">[ 100% ]</span>
+    <span class="setting-label">Volume</span>
+    <span class="setting-value">
+        <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
+    </span>
             </div>
         </div>
     </div>
 
     <script>
+        // Asset Initialization
+        const ASSETS = {
+            background: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true",
+            earth: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Earth.png?raw=true",
+            asteroid: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true",
+            pauseBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true",
+            musicStart: "https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav",
+            musicGame: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true",
+            soundPause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/pause.mp3?raw=true",
+            soundUnpause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/unpause.mp3?raw=true"
+        };
         const preloadGameBg = new Image();
-        preloadGameBg.src = "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true";
-        const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");
-        const ambiance = new Audio("https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true");
+        preloadGameBg.src = ASSETS.background;
+        const preloadPauseBg = new Image();
+        preloadPauseBg.src = ASSETS.pauseBackground;
+        const music = new Audio(ASSETS.musicStart);
+        const ambiance = new Audio(ASSETS.musicGame);
         music.loop = true;
         ambiance.loop = true;
 
@@ -144,8 +160,11 @@
         });
 
         let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
+let isPaused = false;
+const pauseSound = new Audio(ASSETS.soundPause);
+const unpauseSound = new Audio(ASSETS.soundUnpause);
 let fallSpeedMultiplier = 1;
-        asteroidImg.src = "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true";
+        asteroidImg.src = ASSETS.asteroid;
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
@@ -169,6 +188,29 @@ let fallSpeedMultiplier = 1;
     fallSpeedMultiplier = parseFloat(value);
 }
 
+function updateVolume(value) {
+    const vol = parseFloat(value);
+    music.volume = vol;
+    ambiance.volume = vol;
+    pauseSound.volume = vol;
+    unpauseSound.volume = vol;
+}
+
+function pauseGame() {
+    isPaused = true;
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('pauseScreen').style.display = 'flex';
+    pauseSound.play();
+}
+
+function resumeGame() {
+    isPaused = false;
+    document.getElementById('pauseScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'flex';
+    unpauseSound.play();
+    requestAnimationFrame(updateAsteroids);
+}
+
 function quitGame() {
             window.open('', '_self', '');
             window.close();
@@ -185,15 +227,26 @@ function quitGame() {
         }
 
         function createAsteroid() {
-            return {
-                x: Math.random() * canvas.width,
+    const isMobile = window.innerWidth <= 768;
+    const baseSize = isMobile ? 200 : 400;
+    const centerRange = canvas.width * 0.25;
+    const centerOffset = (canvas.width - centerRange) / 2;
+
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    const rotationSpeed = direction * (Math.random() * 0.000000001 - 0.01);
+
+    return {
+                x: Math.random() * centerRange + centerOffset,
                 y: -50,
-                size: 400,
-                speed: (Math.random() * 3 + 2) * fallSpeedMultiplier
+                size: baseSize,
+                speed: (Math.random() * 3 + 2) * fallSpeedMultiplier,
+        angle: 0,
+        rotationSpeed: rotationSpeed
             };
         }
 
         function updateAsteroids() {
+    if (isPaused) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (!asteroid) {
@@ -202,7 +255,12 @@ function quitGame() {
 
             if (asteroid) {
                 asteroid.y += asteroid.speed;
-                ctx.drawImage(asteroidImg, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+                ctx.save();
+                ctx.translate(asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size / 2);
+                ctx.rotate(asteroid.angle);
+                ctx.drawImage(asteroidImg, -asteroid.size / 2, -asteroid.size / 2, asteroid.size, asteroid.size);
+                ctx.restore();
+                asteroid.angle += asteroid.rotationSpeed;
 
                 if (asteroid.y > canvas.height) {
                     asteroid = null;
@@ -219,5 +277,8 @@ function quitGame() {
             }
         });
     </script>
+    <div id="pauseScreen" class="screen settings" style="background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true') no-repeat center center/cover; display: none;">
+    <div class="main-menu" style="position: relative; top: 0; left: 0; font-size: 5vw; padding: 20px;" onclick="resumeGame()">Resume</div>
+</div>
 </body>
 </html>
