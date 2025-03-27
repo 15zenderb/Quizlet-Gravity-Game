@@ -23,22 +23,25 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .menu {
             background: url('https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg') no-repeat center center/cover;
             display: flex;
         }
         .game {
-            background-color: black;
+            background-color: blue;
         }
         .settings {
             background-color: red;
         }
         .menu-option, .main-menu {
-            font-size: 36px;
+            font-size: 5vw;
             cursor: pointer;
-            margin: 20px;
+            margin: 2vh;
             font-family: Arial, sans-serif;
+            text-align: center;
         }
         .menu-option:hover, .main-menu:hover {
             color: yellow;
@@ -47,16 +50,44 @@
             position: absolute;
             top: 20px;
             left: 20px;
+            font-size: 4vw;
         }
         h1 {
-            font-size: 72px;
+            font-size: 8vw;
             font-family: 'Comic Sans MS', cursive;
-            margin-bottom: 50px;
+            margin-bottom: 5vh;
+            text-align: center;
         }
         canvas {
             position: absolute;
             top: 0;
             left: 0;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 4vw;
+        }
+        .setting-label, .setting-value {
+            display: inline-block;
+        }
+        @media (min-width: 768px) {
+            .menu-option, .main-menu {
+                font-size: 36px;
+            }
+            .main-menu {
+                font-size: 28px;
+            }
+            h1 {
+                font-size: 72px;
+            }
+            .setting-item {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -74,32 +105,31 @@
     </div>
 
     <div id="settingsScreen" class="screen settings">
-    <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
-    <h1 style="margin-bottom: 30px;">Settings</h1>
-    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 60%; max-width: 800px;">
-        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
-            <span class="setting-label">Lives</span>
-            <span class="setting-value">[ 3 ]</span>
-        </div>
-        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
-            <span class="setting-label">Levels Enabled</span>
-            <span class="setting-value">[ Yes ]</span>
-        </div>
-        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
-            <span class="setting-label">Questions Per Level</span>
-            <span class="setting-value">[ 10 ]</span>
-        </div>
-        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
-            <span class="setting-label">Fall Speed</span>
-            <span class="setting-value">[ 50 ]</span>
-        </div>
-        <div class="setting-item" style="display: flex; justify-content: space-between; width: 100%; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px;">
-            <span class="setting-label">Volume</span>
-            <span class="setting-value">[ 100% ]</span>
+        <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+        <h1 style="margin-bottom: 30px;">Settings</h1>
+        <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
+            <div class="setting-item">
+                <span class="setting-label">Lives</span>
+                <span class="setting-value">[ 3 ]</span>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Levels Enabled</span>
+                <span class="setting-value">[ Yes ]</span>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Questions Per Level</span>
+                <span class="setting-value">[ 10 ]</span>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Fall Speed</span>
+                <span class="setting-value">[ 50 ]</span>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Volume</span>
+                <span class="setting-value">[ 100% ]</span>
+            </div>
         </div>
     </div>
-</div>
-
 
     <script>
         const music = new Audio("https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav");
@@ -153,7 +183,7 @@
             return {
                 x: Math.random() * canvas.width,
                 y: -50,
-                size: 400, // All asteroids are now the same large size
+                size: 400,
                 speed: Math.random() * 3 + 2
             };
         }
