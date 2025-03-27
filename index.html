@@ -27,16 +27,17 @@
             box-sizing: border-box;
         }
         .menu {
-            background: url('https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg') no-repeat center center/cover;
-            display: flex;
-        }
+    background: var(--menu-bg);
+    display: flex;
+}
         .game {
-            background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true') no-repeat center center/cover;
-        }
+    background: var(--game-bg);
+}
         .settings {
-            background-color: black;
-        }
-               .menu-option, .main-menu {
+    background: var(--pause-bg);
+    background-size: cover;
+}
+        .menu-option, .main-menu {
             font-size: 5vw;
             cursor: pointer;
             margin: 2vh;
@@ -55,8 +56,7 @@
         h1 {
             font-size: 8vw;
             font-family: 'Comic Sans MS', cursive;
-            margin-bottom: 5vh;
-            text-align: center;
+            margin-bottom: 2vh;
         }
         .setting-item {
             display: flex;
@@ -85,10 +85,13 @@
                 font-size: 24px;
             }
         }
+        .glow {
+            box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
+        }
     </style>
 </head>
 <body>
-    <div id="menuScreen" class="screen menu" style="display: flex;">
+    <div id="menuScreen" class="screen menu" style="display: flex; align-items: flex-start; justify-content: flex-start; text-align: left; padding: 20px; gap: 10px; flex-direction: column;">
         <h1>Galactic Recall Quiz Game</h1>
         <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
         <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
@@ -96,8 +99,15 @@
     </div>
 
     <div id="gameScreen" class="screen game">
+        <div id="hud" style="position: absolute; bottom: 10px; left: 10px; font-size: 18px; font-family: 'Courier New', monospace; z-index: 12;">
+            <div>Score: <span id="score">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+            <div>Level: <span id="level">1</span></div>
+        </div>
         <div class="main-menu" style="top: 70px; left: 20px;" onclick="pauseGame()">Pause</div>
         <canvas id="asteroidCanvas"></canvas>
+        <input id="userInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer..." style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 60%; padding: 10px; font-size: 18px; border-radius: 8px; border: none; z-index: 10; background-color: rgba(255, 255, 255, 0.6);">
+        <button id="micButton" style="position: absolute; bottom: 10px; right: 10%; width: 40px; height: 40px; background: url('https://img.icons8.com/ios-filled/50/000000/microphone.png') no-repeat center center; background-size: 60%; background-color: rgba(255,255,255,0.6); border: none; border-radius: 50%; cursor: pointer; z-index: 11;"></button>
         <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
     </div>
 
@@ -119,39 +129,109 @@
             </div>
             <div class="setting-item">
                 <span class="setting-label">Fall Speed</span>
-<span class="setting-value">
-    <input type="range" min="0.1" max="5" step="0.1" value="1" onchange="updateFallSpeed(this.value)" style="width: 150px;">
-</span>
+                <span class="setting-value">
+                    <input type="range" min="0.1" max="5" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
+                </span>
             </div>
             <div class="setting-item">
-    <span class="setting-label">Volume</span>
-    <span class="setting-value">
-        <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
-    </span>
-            </div>
+        <span class="setting-label">Volume</span>
+        <span class="setting-value">
+          <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
+        </span>
+      </div>
+
+      <div class="setting-item">
+        <span class="setting-label">Upload Questions</span>
+        <span class="setting-value">
+          <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)">
+        </span>
+      </div>
         </div>
     </div>
 
     <script>
-        // Asset Initialization
         const ASSETS = {
-            background: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true",
-            earth: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Earth.png?raw=true",
-            asteroid: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true",
-            pauseBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true",
-            musicStart: "https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav",
-            musicGame: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true",
-            soundPause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/pause.mp3?raw=true",
-            soundUnpause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/unpause.mp3?raw=true"
-        };
-        const preloadGameBg = new Image();
-        preloadGameBg.src = ASSETS.background;
-        const preloadPauseBg = new Image();
-        preloadPauseBg.src = ASSETS.pauseBackground;
+  explosion: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/explosion.wav?raw=true",
+  correct: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/correct.mp3?raw=true",
+  incorrect: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/incorrect.mp3?raw=true",
+  menuBackground: "https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/images/Astronaut%20background.jpg",
+  gameBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true",
+  pauseBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true",
+  background: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true",
+  earth: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Earth.png?raw=true",
+  asteroid: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true",
+  pauseBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true",
+  musicStart: "https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav",
+  musicGame: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true",
+  soundPause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/pause.mp3?raw=true",
+  soundUnpause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/unpause.mp3?raw=true",
+  recordStart: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_start.mp3?raw=true",
+  recordEnd: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_end.mp3?raw=true"
+};
+
         const music = new Audio(ASSETS.musicStart);
         const ambiance = new Audio(ASSETS.musicGame);
         music.loop = true;
         ambiance.loop = true;
+
+        const micInput = document.querySelector('#userInput');
+        if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            const micButton = document.querySelector('#micButton');
+            let isRecording = false;
+let readyToRecord = true;
+let silenceTimer = null;
+    micButton.addEventListener('click', () => {
+    try {
+        if (!isRecording && readyToRecord) {
+        readyToRecord = false;
+        recognition.start();
+        silenceTimer = setTimeout(() => {
+            if (isRecording) {
+                recognition.abort();
+                new Audio(ASSETS.recordEnd).play();
+                micButton.classList.remove('glow');
+                isRecording = false;
+                readyToRecord = true;
+        micInput.focus();
+    }
+    }, 2000);
+            new Audio(ASSETS.recordStart).play();
+            micButton.classList.add('glow');
+            isRecording = true;
+        } else {
+            recognition.abort();
+            new Audio(ASSETS.recordEnd).play();
+            micButton.classList.remove('glow');
+            isRecording = false;
+        }
+    } catch (error) {
+        console.error('Speech recognition error:', error);
+    }
+});
+
+            recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    micInput.value = transcript;
+    console.log('Voice input:', transcript);
+    micInput.focus();
+    new Audio(ASSETS.recordEnd).play();
+    micButton.classList.remove('glow');
+    isRecording = false;
+    micInput.focus();
+    readyToRecord = true;
+    if (silenceTimer) clearTimeout(silenceTimer);
+};
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+            };
+        }
 
         document.body.addEventListener("click", () => {
             if (music.paused && !gameStarted) {
@@ -160,10 +240,10 @@
         });
 
         let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
-let isPaused = false;
-const pauseSound = new Audio(ASSETS.soundPause);
-const unpauseSound = new Audio(ASSETS.soundUnpause);
-let fallSpeedMultiplier = 1;
+        let isPaused = false;
+        const pauseSound = new Audio(ASSETS.soundPause);
+        const unpauseSound = new Audio(ASSETS.soundUnpause);
+        let fallSpeedMultiplier = 2.5;
         asteroidImg.src = ASSETS.asteroid;
 
         function showScreen(screenId) {
@@ -173,98 +253,147 @@ let fallSpeedMultiplier = 1;
             document.getElementById(screenId).style.display = 'flex';
 
             if (screenId === 'gameScreen') {
+            isPaused = false;
                 gameStarted = true;
                 music.pause();
                 ambiance.play();
                 startAsteroids();
+                const inputBox = document.getElementById('userInput');
+                if (inputBox) {
+                    inputBox.focus();
+                }
+                document.addEventListener('mousedown', function(event) {
+    const inputBox = document.getElementById('userInput');
+    const micButton = document.getElementById('micButton');
+    if (event.target !== inputBox && event.target !== micButton) {
+        event.preventDefault();
+        inputBox.focus();
+    }
+}, true);
             } else {
-                gameStarted = false;
+            gameStarted = false;
+            isPaused = true;
                 ambiance.pause();
                 music.play();
             }
         }
 
         function updateFallSpeed(value) {
-    fallSpeedMultiplier = parseFloat(value);
+            fallSpeedMultiplier = parseFloat(value);
+        }
+
+        function updateVolume(value) {
+  const vol = parseFloat(value);
+  music.volume = vol;
+  ambiance.volume = vol;
+  pauseSound.volume = vol;
+  unpauseSound.volume = vol;
+  correctSound.volume = vol;
+  incorrectSound.volume = vol;
 }
 
-function updateVolume(value) {
-    const vol = parseFloat(value);
-    music.volume = vol;
-    ambiance.volume = vol;
-    pauseSound.volume = vol;
-    unpauseSound.volume = vol;
-}
+        function pauseGame() {
+            isPaused = true;
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('pauseScreen').style.display = 'flex';
+            pauseSound.play();
+        }
 
-function pauseGame() {
-    isPaused = true;
-    document.getElementById('gameScreen').style.display = 'none';
-    document.getElementById('pauseScreen').style.display = 'flex';
-    pauseSound.play();
-}
-
-function resumeGame() {
+        function resumeGame() {
     isPaused = false;
     document.getElementById('pauseScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'flex';
     unpauseSound.play();
-    requestAnimationFrame(updateAsteroids);
-}
+    const inputBox = document.getElementById('userInput');
+    if (inputBox) {
+        inputBox.focus();
+    }
+    requestAnimationFrame(updateAsteroids);}
 
-function quitGame() {
+        function quitGame() {
             window.open('', '_self', '');
             window.close();
         }
 
         function startAsteroids() {
-            canvas = document.getElementById("asteroidCanvas");
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            ctx = canvas.getContext("2d");
-            asteroid = null;
-            cancelAnimationFrame(animationId);
-            requestAnimationFrame(updateAsteroids);
+  canvas = document.getElementById("asteroidCanvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx = canvas.getContext("2d");
+  asteroid = null;
+  cancelAnimationFrame(animationId);
+  score = 0;
+  document.getElementById("score").innerText = score;
+  currentIndex = 0;
+  nextQuestion();
+  requestAnimationFrame(updateAsteroids);
         }
 
         function createAsteroid() {
-    const isMobile = window.innerWidth <= 768;
-    const baseSize = isMobile ? 200 : 400;
-    const centerRange = canvas.width * 0.25;
-    const centerOffset = (canvas.width - centerRange) / 2;
-
-    const direction = Math.random() < 0.5 ? -1 : 1;
-    const rotationSpeed = direction * (Math.random() * 0.000000001 - 0.01);
-
-    return {
-                x: Math.random() * centerRange + centerOffset,
+  const q = quizData[currentIndex]?.question || "";
+  const isMobile = window.innerWidth <= 768;
+  const baseSize = isMobile ? 200 : 400;
+  const centerOffset = canvas.width / 2 - baseSize / 2;
+  const direction = Math.random() < 0.5 ? -1 : 1;
+  const rotationSpeed = direction * (Math.random() * 0.000000001 - 0.01);
+        
+  return {
+                x: centerOffset + (Math.random() * 200 - 25),
                 y: -50,
                 size: baseSize,
-                speed: (Math.random() * 3 + 2) * fallSpeedMultiplier,
-        angle: 0,
-        rotationSpeed: rotationSpeed
-            };
-        }
+                speed: .5 * fallSpeedMultiplier,
+                angle: 0,
+                rotationSpeed: rotationSpeed,
+    question: q
+        }}
 
         function updateAsteroids() {
-    if (isPaused) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (isPaused) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (!asteroid) {
-                asteroid = createAsteroid();
-            }
+  if (!asteroid) {
+    asteroid = createAsteroid();
+  }
 
-            if (asteroid) {
-                asteroid.y += asteroid.speed;
-                ctx.save();
-                ctx.translate(asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size / 2);
-                ctx.rotate(asteroid.angle);
-                ctx.drawImage(asteroidImg, -asteroid.size / 2, -asteroid.size / 2, asteroid.size, asteroid.size);
-                ctx.restore();
-                asteroid.angle += asteroid.rotationSpeed;
+  if (asteroid) {
+    asteroid.y += asteroid.speed;
+    ctx.save();
+    ctx.translate(asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size / 2);
+    ctx.rotate(asteroid.angle);
+    ctx.drawImage(asteroidImg, -asteroid.size / 2, -asteroid.size / 2, asteroid.size, asteroid.size);
+    ctx.restore();
 
-                if (asteroid.y > canvas.height) {
-                    asteroid = null;
-                }
+    // Draw question separately so it doesn't rotate
+    ctx.font = "20px Courier New";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText(asteroid.question, asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size + 20);
+
+    asteroid.angle += asteroid.rotationSpeed;
+
+    const textBox = document.getElementById("userInput");
+    const textBoxRect = textBox.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const textBoxTopRelativeToCanvas = textBoxRect.top - canvasRect.top;
+    const asteroidBottom = asteroid.y + asteroid.size;
+
+    if (asteroidBottom >= textBoxTopRelativeToCanvas && document.getElementById('gameScreen').style.display === 'flex') {
+      new Audio(ASSETS.explosion).play();
+      lives--;
+      document.getElementById("lives").innerText = lives;
+      isPaused = true;
+      ctx.fillStyle = "red";
+      ctx.font = "32px Courier New";
+      ctx.fillText("-1 Life", canvas.width / 2, canvas.height / 2);
+      ctx.fillStyle = "white";
+      ctx.fillText("Correct answer was: " + quizData[currentIndex].answer, canvas.width / 2, canvas.height / 2 + 40);
+      setTimeout(() => {
+        isPaused = false;
+        currentIndex = (currentIndex + 1) % quizData.length;
+        nextQuestion();
+        requestAnimationFrame(updateAsteroids);
+      }, 2000);
+    }
             }
 
             animationId = requestAnimationFrame(updateAsteroids);
@@ -276,9 +405,66 @@ function quitGame() {
                 canvas.height = window.innerHeight;
             }
         });
-    </script>
-    <div id="pauseScreen" class="screen settings" style="background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true') no-repeat center center/cover; display: none;">
+    document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
+document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
+document.documentElement.style.setProperty('--pause-bg', `url('${ASSETS.pauseBackground}') no-repeat center center/cover`);
+let quizData = [
+  { question: "1", answer: "a" },
+  { question: "2", answer: "b" },
+  { question: "3", answer: "c" },
+];
+
+function handleCSVUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const text = e.target.result;
+    const rows = text.split('').filter(r => r.trim());
+    const data = rows.map(row => {
+      const [question, answer] = row.split(',');
+      return { question: question?.trim(), answer: answer?.trim() };
+    }).filter(item => item.question && item.answer);
+    if (data.length) quizData = data;
+    console.log("Uploaded quiz data:", quizData);
+  };
+  reader.readAsText(file);
+}
+let score = 0;
+let lives = 3;
+let currentIndex = 0;
+const correctSound = new Audio(ASSETS.correct);
+const incorrectSound = new Audio(ASSETS.incorrect);
+
+function nextQuestion() {
+  asteroid = createAsteroid();
+}
+
+document.getElementById("userInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    const input = this.value.trim().toLowerCase();
+    const expected = quizData[currentIndex]?.answer.toLowerCase();
+    if (input === expected) {
+      score++;
+      document.getElementById("score").innerText = score;
+      correctSound.play();
+      this.value = "";
+      currentIndex = (currentIndex + 1) % quizData.length;
+      nextQuestion();
+    } else {
+      score--;
+      document.getElementById("score").innerText = score;
+      incorrectSound.play();
+    }
+  }
+});
+
+</script>
+
+    </body>
+
+<div id="pauseScreen" class="screen settings" style="background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true') no-repeat center center/cover; display: none;">
     <div class="main-menu" style="position: relative; top: 0; left: 0; font-size: 5vw; padding: 20px;" onclick="resumeGame()">Resume</div>
 </div>
-</body>
+
 </html>
