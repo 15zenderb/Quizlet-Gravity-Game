@@ -99,7 +99,7 @@
     </div>
 
     <div id="gameScreen" class="screen game">
-        <div id="hud" style="position: absolute; bottom: 10px; left: 10px; font-size: 18px; font-family: 'Courier New', monospace; z-index: 12;">
+        <div id="hud" style="position: absolute; bottom: 10px; left: 10px; font-size: 32px; font-family: 'Courier New', monospace; z-index: 12;">
             <div>Score: <span id="score">0</span></div>
             <div>Lives: <span id="lives">3</span></div>
             <div>Level: <span id="level">1</span></div>
@@ -161,7 +161,6 @@
   background: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Background.jpg?raw=true",
   earth: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/Earth.png?raw=true",
   asteroid: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/images/Asteroid.png?raw=true",
-  pauseBackground: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true",
   musicStart: "https://raw.githubusercontent.com/15zenderb/Quizlet-Gravity-Game/main/assets/sounds/start%20screen%20music.wav",
   musicGame: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/3ac77616a4f808c26577326c386ecaca3bd7e2ef/assets/sounds/Ambiance.wav?raw=true",
   soundPause: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/pause.mp3?raw=true",
@@ -169,6 +168,14 @@
   recordStart: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_start.mp3?raw=true",
   recordEnd: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_end.mp3?raw=true"
 };
+
+// Preload large background images
+const preloadMenuBg = new Image();
+preloadMenuBg.src = ASSETS.menuBackground;
+const preloadGameBg = new Image();
+preloadGameBg.src = ASSETS.gameBackground;
+const preloadPauseBg = new Image();
+preloadPauseBg.src = ASSETS.pauseBackground;
 
         const music = new Audio(ASSETS.musicStart);
         const ambiance = new Audio(ASSETS.musicGame);
@@ -486,7 +493,7 @@ function showGameOver() {
 
   const msg = document.createElement("div");
   msg.className = '';
-  msg.style.fontSize = "6vw";
+  msg.style.fontSize = "4vw";
   msg.style.marginBottom = "20px";
   msg.innerText = `Game Over! Final Score: ${score}`;
 
