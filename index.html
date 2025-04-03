@@ -88,6 +88,42 @@
         .glow {
             box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
         }
+        .setting-value button {
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin: 0 5px;
+        font-size: 1.2em;
+        border-radius: 8px;
+        cursor: pointer;
+        }
+
+        .setting-value button:hover {
+        background-color: #666;
+        }
+
+        .setting-value span#livesEnabledSetting {
+        display: inline-block;
+        min-width: 80px; /* to match width of numbers/buttons visually */
+        text-align: center;
+        cursor: pointer;
+        padding: 10px 30px;
+        border-radius: 6px;
+        line-height: 1.5;
+        }
+
+        .setting-value span#livesEnabledSetting:hover {
+        background-color: rgba(71, 71, 66, 0.63);
+        color: rgb(255, 255, 255);
+        }
+
+        .setting-value button:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        }
+
+
     </style>
 </head>
 <body>
@@ -115,18 +151,35 @@
         <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
         <h1 style="margin-bottom: 30px;">Settings</h1>
         <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
+            <!-- Lives -->
             <div class="setting-item">
                 <span class="setting-label">Lives</span>
-                <span class="setting-value">[ 3 ]</span>
+                <span class="setting-value">
+                <button id="livesMinus" onclick="changeSetting('lives', -1)">−</button>
+                <span id="livesSetting">3</span>
+                <button id="livesPlus" onclick="changeSetting('lives', 1)">+</button>
+                </span>
             </div>
+            
+            <!-- Lives Enabled -->
             <div class="setting-item">
-                <span class="setting-label">Levels Enabled</span>
-                <span class="setting-value">[ Yes ]</span>
+                <span class="setting-label">Lives Enabled</span>
+                <span class="setting-value">
+                <span id="livesEnabledSetting" onclick="toggleSetting('livesEnabled')">Yes</span>
+                </span>
             </div>
+  
+            
+            <!-- Questions Per Level -->
             <div class="setting-item">
                 <span class="setting-label">Questions Per Level</span>
-                <span class="setting-value">[ 10 ]</span>
+                <span class="setting-value">
+                <button onclick="changeSetting('questionsPerLevel', -1)">−</button>
+                <span id="questionsPerLevelSetting">3</span>
+                <button onclick="changeSetting('questionsPerLevel', 1)">+</button>
+                </span>
             </div>
+  
             <div class="setting-item">
                 <span class="setting-label">Fall Speed</span>
                 <span class="setting-value">
@@ -251,7 +304,7 @@ let silenceTimer = null;
         let isPaused = false;
         const pauseSound = new Audio(ASSETS.soundPause);
         const unpauseSound = new Audio(ASSETS.soundUnpause);
-        let fallSpeedMultiplier = 2.5;
+        let fallSpeedMultiplier = 2;
         asteroidImg.src = ASSETS.asteroid;
 
         function showScreen(screenId) {
@@ -266,6 +319,14 @@ let silenceTimer = null;
                 music.pause();
                 ambiance.play();
                 startAsteroids();
+                if (window.innerWidth <= 768) {
+                    document.getElementById("userInput").style.display = "none";
+                    document.getElementById("micButton").style.display = "block";
+                    fallSpeedMultiplier = 1.5;
+                } else {
+                    document.getElementById("userInput").style.display = "block";
+                    document.getElementById("micButton").style.display = "block";
+                }
                 const inputBox = document.getElementById('userInput');
                 if (inputBox) {
                     inputBox.focus();
@@ -289,6 +350,7 @@ let silenceTimer = null;
         function updateFallSpeed(value) {
             fallSpeedMultiplier = parseFloat(value);
         }
+
 
         function updateVolume(value) {
   const vol = parseFloat(value);
@@ -323,7 +385,9 @@ let silenceTimer = null;
             window.close();
         }
 
-        function startAsteroids() {
+//START GAME
+function startAsteroids() {
+
   canvas = document.getElementById("asteroidCanvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -331,11 +395,37 @@ let silenceTimer = null;
   asteroid = null;
   cancelAnimationFrame(animationId);
   score = 0;
-  document.getElementById("score").innerText = score;
+  lives = settings.livesEnabled ? settings.lives : Infinity;
+    level = 1;
+    correctStreak = 0;
+    missedAnswers = [];
+    document.getElementById("score").innerText = score;
+    document.getElementById("lives").innerText = lives;
+    document.getElementById("level").innerText = level;
+    document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
+
   currentIndex = 0;
   nextQuestion();
   requestAnimationFrame(updateAsteroids);
         }
+
+        function showLevelUpMessage(level) {
+    const levelMsg = document.createElement("div");
+    levelMsg.innerText = `LEVEL ${level}`;
+    levelMsg.style.position = "absolute";
+    levelMsg.style.top = "40%";
+    levelMsg.style.left = "50%";
+    levelMsg.style.transform = "translate(-50%, -50%)";
+    levelMsg.style.background = "black";
+    levelMsg.style.color = "white";
+    levelMsg.style.fontSize = "6vw";
+    levelMsg.style.padding = "20px 40px";
+    levelMsg.style.zIndex = 9999;
+    levelMsg.style.borderRadius = "12px";
+    levelMsg.style.fontFamily = "'Courier New', monospace";
+    document.body.appendChild(levelMsg);
+    setTimeout(() => document.body.removeChild(levelMsg), 2000);
+    }
 
         function createAsteroid() {
   const q = quizData[currentIndex]?.question || "";
@@ -375,7 +465,26 @@ let silenceTimer = null;
     ctx.font = "20px Courier New";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
-    ctx.fillText(asteroid.question, asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size + 20);
+    const maxWidth = asteroid.size;
+    const words = asteroid.question.split(' ');
+    let line = '';
+    let y = asteroid.y - 10;
+    ctx.textAlign = 'center';
+    ctx.font = "20px Courier New";
+
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const testWidth = ctx.measureText(testLine).width;
+        if (testWidth > maxWidth) {
+            ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
+            line = words[i] + ' ';
+            y += 22;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
+
 
     asteroid.angle += asteroid.rotationSpeed;
 
@@ -449,6 +558,14 @@ let score = 0;
 let lives = 3;
 let missedAnswers = [];
 let currentIndex = 0;
+let level = 1;
+let correctStreak = 0;
+let levelsEnabled = true;
+let settings = {
+  lives: 3,
+  livesEnabled: true, // renamed from levelsEnabled
+  questionsPerLevel: 3
+};
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
 
@@ -456,17 +573,27 @@ function nextQuestion() {
   asteroid = createAsteroid();
 }
 
+//answer handler
 document.getElementById("userInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
     const input = this.value.trim().toLowerCase();
     const expected = quizData[currentIndex]?.answer.toLowerCase();
     if (input === expected) {
-      score++;
-      document.getElementById("score").innerText = score;
-      correctSound.play();
-      this.value = "";
-      currentIndex = (currentIndex + 1) % quizData.length;
-      nextQuestion();
+        score++;
+        correctStreak++;
+        document.getElementById("score").innerText = score;
+        correctSound.play();
+        this.value = "";
+
+        if (settings.levelsEnabled && correctStreak % settings.questionsPerLevel === 0) {
+            level++;
+            fallSpeedMultiplier += 5;
+            document.getElementById("level").innerText = level;
+            showLevelUpMessage(level);
+        }
+
+        currentIndex = (currentIndex + 1) % quizData.length;
+        nextQuestion();
     } else {
       score--;
       document.getElementById("score").innerText = score;
@@ -508,13 +635,19 @@ function showGameOver() {
   const retry = document.createElement("div");
   retry.className = 'menu-option';
   retry.innerText = "Retry";
+  //retry handler
   retry.onclick = () => {
     document.body.removeChild(overlay);
-    lives = 3;
+    lives = settings.livesEnabled ? settings.lives : Infinity;
     score = 0;
     currentIndex = 0;
+    missedAnswers = [];
+    level = 1;
+    correctStreak = 0;
+    document.getElementById("level").innerText = level;
     document.getElementById("lives").innerText = lives;
     document.getElementById("score").innerText = score;
+    document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
     showScreen('gameScreen');
   };
 
@@ -533,7 +666,7 @@ function showGameOver() {
   missedAnswers.forEach((item, index) => {
     const miss = document.createElement("div");
     miss.innerText = `${index + 1}. ${item.question} → ${item.answer}`;
-    miss.style.color = index % 2 === 0 ? "red" : "darkred";
+    miss.style.color = "red";
     miss.style.fontFamily = "'Courier New', monospace";
     miss.style.fontSize = "20px";
     miss.style.margin = "5px";
@@ -559,6 +692,33 @@ function showGameOver() {
 
   document.addEventListener("keydown", handleEndKeys);
 }
+
+function changeSetting(key, delta) {
+  if (key === 'lives' && settings.livesEnabled) {
+    settings.lives = Math.max(1, Math.min(10, settings.lives + delta));
+    document.getElementById("livesSetting").innerText = settings.lives;
+  } else if (key === 'questionsPerLevel') {
+    settings.questionsPerLevel = Math.max(1, Math.min(10, settings.questionsPerLevel + delta));
+    document.getElementById("questionsPerLevelSetting").innerText = settings.questionsPerLevel;
+  }
+}
+
+function toggleSetting(key) {
+  if (key === 'livesEnabled') {
+    settings.livesEnabled = !settings.livesEnabled;
+
+    const label = document.getElementById("livesEnabledSetting");
+    const livesText = document.getElementById("livesSetting");
+    const minusBtn = document.getElementById("livesMinus");
+    const plusBtn = document.getElementById("livesPlus");
+
+    label.innerText = settings.livesEnabled ? "Yes" : "No";
+    livesText.innerText = settings.livesEnabled ? settings.lives : "Infinity";
+    minusBtn.disabled = !settings.livesEnabled;
+    plusBtn.disabled = !settings.livesEnabled;
+  }
+}
+
 
 
 </script>
