@@ -348,7 +348,7 @@
       <div class="setting-item">
         <span class="setting-label">Fall Speed</span>
         <span class="setting-value">
-          <input type="range" min="0.1" max="50" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
+          <input type="range" min="0" max="100" step="1" value="20" onchange="adjustedFallSpeed(this.value)" style="width: 150px;">
         </span>
       </div>
 
@@ -627,11 +627,15 @@ function showScreen(screenId) {
     music.play();
 
     if (screenId === 'settingsScreen') {
-      const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       if (slider) {
-        slider.value = settings.fallSpeed;
+        const minSpeed = 0.3;
+        const maxSpeed = 30;
+        const percent = Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed);
+        slider.value = Math.round(percent * 100);
       }
     }
+
   }
 }
 
@@ -662,9 +666,19 @@ function getNextQuestion() {
   return shuffledQuestions[shuffledIndex++];
 }
 
-function updateFallSpeed(value) {
-  settings.fallSpeed = parseFloat(value);
+function adjustedFallSpeed(sliderValue) {
+  // Map slider (0–100) to fall speed using an exponential curve
+  const minSpeed = 0.3;
+  const maxSpeed = 30;
+  const percent = sliderValue / 100;
+
+  // Exponential scaling: more precision at low end
+  const curvedSpeed = minSpeed * Math.pow(maxSpeed / minSpeed, percent);
+
+  settings.fallSpeed = curvedSpeed;
+  fallSpeedMultiplier = curvedSpeed; // immediately apply if needed
 }
+
 
 function updateVolume(value) {
   const vol = parseFloat(value);
@@ -1080,16 +1094,16 @@ function skipQuestion() {
   showOverlay(
     {
       title: "-1 Point (Skipped)",
-      message: "Correct answer was: " + quizData[currentIndex].answer
+      message: "Correct answer was: " + (asteroid?.answer || "[unknown]")
     },
     () => {
       isPaused = false;
-      currentIndex = (currentIndex + 1) % quizData.length;
       nextQuestion();
       requestAnimationFrame(updateAsteroids);
     }
   );
 }
+
 
 function showOverlay({ title, message, titleColor = "red" }, callback) {
   suppressNextEnter = true; // 🚫 block next Enter key
