@@ -208,6 +208,52 @@
         pointer-events: none;
       }
 
+      #endGameScreen {
+        background: var(--pause-bg);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      
+      .level-up-message {
+      position: fixed; /* ← use fixed instead of absolute for true viewport centering */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);  
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      padding: 30px 60px;
+      background: radial-gradient(circle at center, #220000 40%, #000 100%);
+      color: #ff4d4d;
+      font-size: 5vw;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 6px #ff4d4d;
+      border: 2px solid #ff4d4d;
+      border-radius: 16px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+    }
+
+    .level-up-message.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.05);
+      animation: pulse-glow-red 1.5s ease-in-out;
+    }
+
+    @keyframes pulse-glow-red {
+      0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px #ff4d4d; }
+      50% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 14px #ff4d4d; }
+      100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px #ff4d4d; }
+    }
+
+
+
+
       @media (min-width: 768px) {
         .menu-option, .main-menu {
           font-size: 36px;
@@ -225,11 +271,9 @@
           font-size: 16px;
         }
       }
-    </style>
+
+      
     </style>    
-    
-    
-    
     
 </head>
 <body>
@@ -620,32 +664,28 @@ function resumeGame() {
 
 function showLevelUpMessage(level) {
   const levelMsg = document.createElement("div");
+  levelMsg.className = "level-up-message";
   levelMsg.innerText = `LEVEL ${level}`;
-  levelMsg.style.position = "absolute";
-  levelMsg.style.top = "40%";
-  levelMsg.style.left = "50%";
-  levelMsg.style.transform = "translate(-50%, -50%)";
-  levelMsg.style.background = "black";
-  levelMsg.style.color = "white";
-  levelMsg.style.fontSize = "6vw";
-  levelMsg.style.padding = "20px 40px";
-  levelMsg.style.zIndex = 9999;
-  levelMsg.style.borderRadius = "12px";
-  levelMsg.style.fontFamily = "'Courier New', monospace";
-
   document.body.appendChild(levelMsg);
 
-  // Pause gameplay and suppress input
   isPaused = true;
   suppressNextEnter = true;
 
+  // Trigger animation by forcing reflow and adding a class
+  void levelMsg.offsetWidth;
+  levelMsg.classList.add("show");
+
   setTimeout(() => {
-    document.body.removeChild(levelMsg);
-    isPaused = false;
-    suppressNextEnter = false;
-    requestAnimationFrame(updateAsteroids); // Resume game
+    levelMsg.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(levelMsg);
+      isPaused = false;
+      suppressNextEnter = false;
+      requestAnimationFrame(updateAsteroids);
+    }, 500); // match fade-out duration
   }, 1500);
 }
+
 
 
 
@@ -859,7 +899,8 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
 
 function showGameOver() {
   const overlay = document.createElement("div");
-  overlay.className = "screen settings";
+  overlay.id = "endGameScreen";
+  overlay.className = "screen end-game";
   overlay.style.position = "absolute";
   overlay.style.top = "0";
   overlay.style.left = "0";
