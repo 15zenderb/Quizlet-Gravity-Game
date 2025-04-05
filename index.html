@@ -113,7 +113,7 @@
         bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 60%;
+        width: 30%; /* made it less wide */
         padding: 10px;
         font-size: 18px;
         border-radius: 8px;
@@ -121,21 +121,23 @@
         z-index: 10;
         background-color: rgba(255, 255, 255, 0.6);
       }
-    
+
       #micButton {
         position: absolute;
         bottom: 10px;
-        right: 10%;
-        width: 40px;
         height: 40px;
+        width: 40px;
         background: url('https://img.icons8.com/ios-filled/50/000000/microphone.png') no-repeat center center;
         background-size: 60%;
-        background-color: rgba(255,255,255,0.6);
+        background-color: rgba(255, 255, 255, 0.6);
         border: none;
         border-radius: 50%;
         cursor: pointer;
         z-index: 11;
+        /* Anchor it to the right edge of the input */
+        left: calc(50% + 17% + 10px); /* 22.5% is half of the input width */
       }
+
     
       .glow {
         box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
@@ -465,6 +467,7 @@ let settings = {
 };
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
+let micPermissionRequested = false;
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
 
@@ -473,47 +476,47 @@ document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackg
 document.documentElement.style.setProperty('--pause-bg', `url('${ASSETS.pauseBackground}') no-repeat center center/cover`);
 
 if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
 
-            const micButton = document.querySelector('#micButton');
-            let isRecording = false;
-            let readyToRecord = true;
-            let silenceTimer = null;
-    
-            micButton.addEventListener('click', () => {
+  const micButton = document.querySelector('#micButton');
+  let isRecording = false;
+  let readyToRecord = true;
+  let silenceTimer = null;
+
+  micButton.addEventListener('click', () => {
     try {
-        if (!isRecording && readyToRecord) {
+      if (!isRecording && readyToRecord) {
         readyToRecord = false;
         recognition.start();
         silenceTimer = setTimeout(() => {
-            if (isRecording) {
-                recognition.abort();
-                new Audio(ASSETS.recordEnd).play();
-                micButton.classList.remove('glow');
-                isRecording = false;
-                readyToRecord = true;
-        micInput.focus();
-    }
-    }, 2000);
-            new Audio(ASSETS.recordStart).play();
-            micButton.classList.add('glow');
-            isRecording = true;
-        } else {
+          if (isRecording) {
             recognition.abort();
             new Audio(ASSETS.recordEnd).play();
             micButton.classList.remove('glow');
             isRecording = false;
-        }
+            readyToRecord = true;
+            micInput.focus();
+          }
+        }, 2000);
+        new Audio(ASSETS.recordStart).play();
+        micButton.classList.add('glow');
+        isRecording = true;
+      } else {
+        recognition.abort();
+        new Audio(ASSETS.recordEnd).play();
+        micButton.classList.remove('glow');
+        isRecording = false;
+      }
     } catch (error) {
-        console.error('Speech recognition error:', error);
+      console.error('Speech recognition error:', error);
     }
-});
+  });
 
-            recognition.onresult = (event) => {
+  recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     micInput.value = transcript;
     console.log('Voice input:', transcript);
@@ -524,88 +527,97 @@ if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in w
     micInput.focus();
     readyToRecord = true;
     if (silenceTimer) clearTimeout(silenceTimer);
-};
+  };
 
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-            };
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+  };
 }
 
-        document.body.addEventListener("click", () => {
-            if (music.paused && !gameStarted) {
-                music.play().catch(error => console.log("User interaction required for audio playback."));
-            }
-        });
+document.body.addEventListener("click", () => {
+  if (music.paused && !gameStarted) {
+    music.play().catch(error => console.log("User interaction required for audio playback."));
+  }
+});
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            document.getElementById(screenId).style.display = 'flex';
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.style.display = 'none';
+  });
+  document.getElementById(screenId).style.display = 'flex';
 
-            if (screenId === 'gameScreen') {
-                isPaused = false;
-                gameStarted = true;
-                music.pause();
-                ambiance.play();
-                startAsteroids();
+  if (screenId === 'gameScreen') {
+    isPaused = false;
+    gameStarted = true;
+    music.pause();
+    ambiance.play();
+    startAsteroids();
 
-                if (window.innerWidth <= 768) {
-                    document.getElementById("userInput").style.display = "none";
-                    document.getElementById("micButton").style.display = "block";
+    // ✅ Request mic permission once
+    if (!micPermissionRequested && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      try {
+        const TestRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const test = new TestRecognition();
+        test.onstart = () => test.abort(); // Immediately stop after starting
+        test.start();
+        micPermissionRequested = true;
+      } catch (err) {
+        console.warn("Mic permission error:", err);
+      }
+    }
 
-                    // Set slider to default mobile-friendly value *only* if the user hasn't changed it
-                    const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
-                    if (!gameStarted && slider && slider.value == "2.5") {
-                        slider.value = 1.5;
-                        updateFallSpeed(1.5);
-                    }
-                } else {
-                    document.getElementById("userInput").style.display = "block";
-                    document.getElementById("micButton").style.display = "block";
-                }
+    if (window.innerWidth <= 768) {
+      document.getElementById("userInput").style.display = "none";
+      document.getElementById("micButton").style.display = "block";
 
-                const inputBox = document.getElementById('userInput');
-                if (inputBox) {
-                    inputBox.focus();
-                }
+      const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      if (!gameStarted && slider && slider.value == "2.5") {
+        slider.value = 1.5;
+        updateFallSpeed(1.5);
+      }
+    } else {
+      document.getElementById("userInput").style.display = "block";
+      document.getElementById("micButton").style.display = "block";
+    }
 
-                document.addEventListener('mousedown', function(event) {
-                    const inputBox = document.getElementById('userInput');
-                    const micButton = document.getElementById('micButton');
-                    const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
-                    if (
-                        event.target !== inputBox &&
-                        event.target !== micButton &&
-                        !event.target.closest('input[type="range"]')
-                    ) {
-                        event.preventDefault();
-                        inputBox.focus();
-                    }
+    const inputBox = document.getElementById('userInput');
+    if (inputBox) {
+      inputBox.focus();
+    }
 
-                }, true);
+    document.addEventListener('mousedown', function (event) {
+      const inputBox = document.getElementById('userInput');
+      const micButton = document.getElementById('micButton');
+      const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      if (
+        event.target !== inputBox &&
+        event.target !== micButton &&
+        !event.target.closest('input[type="range"]')
+      ) {
+        event.preventDefault();
+        inputBox.focus();
+      }
+    }, true);
+  } else {
+    gameStarted = false;
+    isPaused = true;
+    ambiance.pause();
+    music.play();
 
-            } else {
-                gameStarted = false;
-                isPaused = true;
-                ambiance.pause();
-                music.play();
+    if (screenId === 'settingsScreen') {
+      const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      if (slider) {
+        slider.value = settings.fallSpeed;
+      }
+    }
+  }
+}
 
-                // Sync fall speed slider with current setting when going to settings screen
-                if (screenId === 'settingsScreen') {
-                    const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
-                    if (slider) {
-                        slider.value = settings.fallSpeed;
-                    }
-                }
-            }
-        }
+function updateFallSpeed(value) {
+  settings.fallSpeed = parseFloat(value);
+}
 
-        function updateFallSpeed(value) {
-          settings.fallSpeed = parseFloat(value);
-        }
-
-        function updateVolume(value) {
+function updateVolume(value) {
   const vol = parseFloat(value);
   music.volume = vol;
   ambiance.volume = vol;
@@ -1092,10 +1104,26 @@ function showOverlay({ title, message, titleColor = "red" }, callback) {
 }
 
 
-
 function showCSVHelp() {
   alert("Your CSV file should have two columns, formatted like this:\n\nWhat is 2+2?,4\nCapital of France?,Paris");
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Ask for mic permission once when the page loads
+  if (!micPermissionRequested && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    try {
+      const TestRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const test = new TestRecognition();
+      test.onstart = () => test.abort(); // immediately stop
+      test.start();
+      micPermissionRequested = true;
+      console.log("🎤 Microphone permission requested on load.");
+    } catch (err) {
+      console.warn("Mic permission error:", err);
+    }
+  }
+});
+
 
 </script>
 
