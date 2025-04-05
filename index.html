@@ -627,14 +627,14 @@ function showScreen(screenId) {
     music.play();
 
     if (screenId === 'settingsScreen') {
-      const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
-      if (slider) {
-        const minSpeed = 0.3;
-        const maxSpeed = 30;
-        const percent = Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed);
-        slider.value = Math.round(percent * 100);
-      }
+    const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
+    if (slider) {
+      const minSpeed = 0.3;
+      const maxSpeed = 30;
+      const percent = Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed);
+      slider.value = Math.round(percent * 100);
     }
+  }
 
   }
 }
@@ -761,7 +761,7 @@ function showLevelUpMessage(level) {
   }, 1500);
 }
 
-function createAsteroid(questionObj) {
+function createAsteroid(q) {
   const isMobile = window.innerWidth <= 768;
   const baseSize = isMobile ? 200 : 400;
   const centerOffset = canvas.width / 2 - baseSize / 2;
@@ -775,10 +775,13 @@ function createAsteroid(questionObj) {
     speed: 0.5 * fallSpeedMultiplier,
     angle: 0,
     rotationSpeed: rotationSpeed,
-    question: questionObj.question,
-    answer: questionObj.answer
+    question: q.question,
+    answer: q.answer,
+    raw: q
   };
 }
+
+
 
 
 function updateAsteroids() {
@@ -841,8 +844,8 @@ function updateAsteroids() {
     new Audio(ASSETS.explosion).play();
     lives--;
     missedAnswers.push({
-      question: quizData[currentIndex].question,
-      answer: quizData[currentIndex].answer
+      question: asteroid.question,
+      answer: asteroid.answer
     });
 
     document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
@@ -851,7 +854,7 @@ function updateAsteroids() {
     showOverlay(
       {
         title: "-1 Life",
-        message: "Correct answer was: " + quizData[currentIndex].answer
+        message: "Correct answer was: " + asteroid.answer
       },
       () => {
         if (lives <= 0) {
@@ -924,6 +927,7 @@ function nextQuestion() {
   const questionObj = getNextShuffledQuestion();
   asteroid = createAsteroid(questionObj);
 }
+
 
 
 document.getElementById("userInput").addEventListener("keydown", function (e) {
@@ -1094,7 +1098,7 @@ function skipQuestion() {
   showOverlay(
     {
       title: "-1 Point (Skipped)",
-      message: "Correct answer was: " + (asteroid?.answer || "[unknown]")
+      message: "Correct answer was: " + asteroid.answer
     },
     () => {
       isPaused = false;
