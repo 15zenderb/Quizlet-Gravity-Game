@@ -635,6 +635,17 @@ function showScreen(screenId) {
   }
 }
 
+function getNextShuffledQuestion() {
+  if (shuffledIndex >= shuffledQuestions.length || shuffledQuestions.length === 0) {
+    shuffledQuestions = [...quizData];
+    for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+    }
+    shuffledIndex = 0;
+  }
+  return shuffledQuestions[shuffledIndex++];
+
 function shuffleQuestions() {
   shuffledQuestions = quizData.slice(); // copy array
   for (let i = shuffledQuestions.length - 1; i > 0; i--) {
@@ -642,7 +653,7 @@ function shuffleQuestions() {
     [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
   }
   shuffledIndex = 0;
-}
+}}
 
 function getNextQuestion() {
   if (shuffledIndex >= shuffledQuestions.length) {
@@ -736,12 +747,7 @@ function showLevelUpMessage(level) {
   }, 1500);
 }
 
-
-
-
-function createAsteroid() {
-  const qObj = getNextQuestion();
-  const q = qObj.question;
+function createAsteroid(questionObj) {
   const isMobile = window.innerWidth <= 768;
   const baseSize = isMobile ? 200 : 400;
   const centerOffset = canvas.width / 2 - baseSize / 2;
@@ -752,10 +758,11 @@ function createAsteroid() {
     x: centerOffset + (Math.random() * 200 - 25),
     y: -50,
     size: baseSize,
-    speed: 0.5 * fallSpeedMultiplier, // ✅ Use the current speed multiplier
+    speed: 0.5 * fallSpeedMultiplier,
     angle: 0,
     rotationSpeed: rotationSpeed,
-    question: q
+    question: questionObj.question,
+    answer: questionObj.answer
   };
 }
 
@@ -899,13 +906,11 @@ function handleCSVUpload(event) {
   reader.readAsText(file);
 }
 
-
-
-
-
 function nextQuestion() {
-  asteroid = createAsteroid();
+  const questionObj = getNextShuffledQuestion();
+  asteroid = createAsteroid(questionObj);
 }
+
 
 document.getElementById("userInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
@@ -915,7 +920,7 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
       return;
     }
     const input = this.value.trim().toLowerCase();
-    const expected = quizData[currentIndex]?.answer.toLowerCase();
+    const expected = asteroid.answer?.toLowerCase();
 
     if (input === expected) {
       score++;
