@@ -5,90 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Quiz Game</title>
     <style>
-        body {
-            margin: 0;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: black;
-            color: white;
-        }
-        .screen {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-        .menu {
-    background: var(--menu-bg);
-    display: flex;
-}
-        .game {
-    background: var(--game-bg);
-}
-        .settings {
-    background: var(--pause-bg);
-    background-size: cover;
-}
-        .menu-option, .main-menu {
-            font-size: 5vw;
-            cursor: pointer;
-            margin: 2vh;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        .menu-option:hover, .main-menu:hover {
-            color: yellow;
-        }
-        .main-menu {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 4vw;
-        }
-        h1 {
-            font-size: 8vw;
-            font-family: 'Comic Sans MS', cursive;
-            margin-bottom: 2vh;
-        }
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 4vw;
-            font-family: 'Courier New', monospace;
-        }
-        .setting-label, .setting-value {
-            display: inline-block;
-        }
-        @media (min-width: 768px) {
-            .menu-option, .main-menu {
-                font-size: 36px;
-            }
-            .main-menu {
-                font-size: 28px;
-            }
-            h1 {
-                font-size: 72px;
-            }
-            .setting-item {
-                font-size: 24px;
-            }
-        }
-        .glow {
-            box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
-        }
-        .setting-value button {
+      body {
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: black;
+        color: white;
+      }
+    
+      .screen {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+    
+      .menu {
+        background: var(--menu-bg);
+        display: flex;
+      }
+    
+      .game {
+        background: var(--game-bg);
+      }
+    
+      .settings {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+    
+      #pauseScreen {
+        background: var(--pause-bg);
+      }
+    
+      h1 {
+        font-size: 4vw;
+        font-family: 'Comic Sans MS', cursive;
+        margin-bottom: 2vh;
+      }
+    
+      .menu-option,
+      .main-menu {
+        font-size: 2vw;
+        cursor: pointer;
+        margin: 2vh;
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+    
+      .menu-option:hover,
+      .main-menu:hover {
+        color: yellow;
+      }
+    
+      /* Game screen top-left buttons */
+      .game-buttons {
+        position: absolute;
+        font-size: 2;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        z-index: 12;
+      }
+    
+      .gamescreen-button {
+        font-size: 24px;
+        background-color: rgba(255, 255, 255, 0.15);
+        padding: 2px 8px;
+        margin: 0;
+        border-radius: 4px;
+        font-family: 'Arial';
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        line-height: 1.1;
+        gap: 4px;
+      }
+    
+      .gamescreen-button:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: yellow;
+      }
+    
+      #hud {
+        padding: 10px;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        font-size: 24px;
+        font-family: 'Courier New', monospace;
+        z-index: 12;
+      }
+    
+      #userInput {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 8px;
+        border: none;
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.6);
+      }
+    
+      #micButton {
+        position: absolute;
+        bottom: 10px;
+        right: 10%;
+        width: 40px;
+        height: 40px;
+        background: url('https://img.icons8.com/ios-filled/50/000000/microphone.png') no-repeat center center;
+        background-size: 60%;
+        background-color: rgba(255,255,255,0.6);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 11;
+      }
+    
+      .glow {
+        box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
+      }
+    
+
+      #settingsScreen {
+        background: var(--pause-bg);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .setting-item {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px 20px;
+        border-radius: 12px;
+        font-size: 4vw;
+        font-family: 'Courier New', monospace;
+      }
+    
+      .setting-label,
+      .setting-value {
+        display: inline-block;
+      }
+    
+      .setting-value button {
         background-color: #444;
         color: white;
         border: none;
@@ -97,112 +173,197 @@
         font-size: 1.2em;
         border-radius: 8px;
         cursor: pointer;
-        }
-
-        .setting-value button:hover {
+      }
+    
+      .setting-value button:hover {
         background-color: #666;
-        }
-
-        .setting-value span#livesEnabledSetting {
-        display: inline-block;
-        min-width: 80px; /* to match width of numbers/buttons visually */
-        text-align: center;
-        cursor: pointer;
-        padding: 10px 30px;
-        border-radius: 6px;
-        line-height: 1.5;
-        }
-
-        .setting-value span#livesEnabledSetting:hover {
-        background-color: rgba(71, 71, 66, 0.63);
-        color: rgb(255, 255, 255);
-        }
-
-        .setting-value button:disabled {
+      }
+    
+      .setting-value button:disabled {
         opacity: 0.3;
         cursor: not-allowed;
+      }
+    
+      .setting-value span#livesEnabledSetting {
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 6px;
+        line-height: 1.5;
+      }
+    
+      .setting-value span#livesEnabledSetting:hover {
+        background-color: rgba(71, 71, 66, 0.63);
+        color: rgb(255, 255, 255);
+      }
+    
+      #csvStatus {
+        margin-top: 8px;
+        font-size: 14px;
+        color: lime;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        pointer-events: none;
+      }
+
+      @media (min-width: 768px) {
+        .menu-option, .main-menu {
+          font-size: 36px;
         }
-
-
+    
+        h1 {
+          font-size: 72px;
+        }
+    
+        .setting-item {
+          font-size: 24px;
+        }
+    
+        .menu-option.menu-btn {
+          font-size: 16px;
+        }
+      }
     </style>
+    </style>    
+    
+    
+    
+    
 </head>
 <body>
-    <div id="menuScreen" class="screen menu" style="display: flex; align-items: flex-start; justify-content: flex-start; text-align: left; padding: 20px; gap: 10px; flex-direction: column;">
-        <h1>Galactic Recall Quiz Game</h1>
-        <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
-        <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
-        <div class="menu-option" onclick="quitGame()">Quit</div>
+  <!-- Menu Screen -->
+  <div id="menuScreen" class="screen menu" style="display: flex; align-items: flex-start; justify-content: flex-start; text-align: left; padding: 20px; gap: 10px; flex-direction: column;">
+    <h1>Galactic Recall Quiz Game</h1>
+    <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
+    <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
+    <div class="menu-option" onclick="quitGame()">Quit</div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="screen game">
+    <!-- HUD -->
+    <div id="hud">
+      <div>Score: <span id="score">0</span></div>
+      <div>Lives: <span id="lives">3</span></div>
+      <div>Level: <span id="level">1</span></div>
     </div>
 
-    <div id="gameScreen" class="screen game">
-        <div id="hud" style="position: absolute; bottom: 10px; left: 10px; font-size: 32px; font-family: 'Courier New', monospace; z-index: 12;">
-            <div>Score: <span id="score">0</span></div>
-            <div>Lives: <span id="lives">3</span></div>
-            <div>Level: <span id="level">1</span></div>
-        </div>
-        <div class="main-menu" style="top: 70px; left: 20px;" onclick="pauseGame()">Pause</div>
-        <canvas id="asteroidCanvas"></canvas>
-        <input id="userInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer..." style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 60%; padding: 10px; font-size: 18px; border-radius: 8px; border: none; z-index: 10; background-color: rgba(255, 255, 255, 0.6);">
-        <button id="micButton" style="position: absolute; bottom: 10px; right: 10%; width: 40px; height: 40px; background: url('https://img.icons8.com/ios-filled/50/000000/microphone.png') no-repeat center center; background-size: 60%; background-color: rgba(255,255,255,0.6); border: none; border-radius: 50%; cursor: pointer; z-index: 11;"></button>
-        <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+    <!-- Control Buttons -->
+    <div class="game-buttons">
+      <div class="gamescreen-button" onclick="showScreen('menuScreen')">Main Menu</div>
+      <div class="gamescreen-button" onclick="pauseGame()">Pause</div>
+      <div class="gamescreen-button" onclick="skipQuestion()">Skip Question</div>
     </div>
 
-    <div id="settingsScreen" class="screen settings">
-        <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
-        <h1 style="margin-bottom: 30px;">Settings</h1>
-        <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
-            <!-- Lives -->
-            <div class="setting-item">
-                <span class="setting-label">Lives</span>
-                <span class="setting-value">
-                <button id="livesMinus" onclick="changeSetting('lives', -1)">−</button>
-                <span id="livesSetting">3</span>
-                <button id="livesPlus" onclick="changeSetting('lives', 1)">+</button>
-                </span>
-            </div>
-            
-            <!-- Lives Enabled -->
-            <div class="setting-item">
-                <span class="setting-label">Lives Enabled</span>
-                <span class="setting-value">
-                <span id="livesEnabledSetting" onclick="toggleSetting('livesEnabled')">Yes</span>
-                </span>
-            </div>
-  
-            
-            <!-- Questions Per Level -->
-            <div class="setting-item">
-                <span class="setting-label">Questions Per Level</span>
-                <span class="setting-value">
-                <button onclick="changeSetting('questionsPerLevel', -1)">−</button>
-                <span id="questionsPerLevelSetting">3</span>
-                <button onclick="changeSetting('questionsPerLevel', 1)">+</button>
-                </span>
-            </div>
-  
-            <div class="setting-item">
-                <span class="setting-label">Fall Speed</span>
-                <span class="setting-value">
-                    <input type="range" min="0.1" max="150" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
-                </span>
-            </div>
-            <div class="setting-item">
+    <!-- Canvas & Input -->
+    <canvas id="asteroidCanvas"></canvas>
+    <input id="userInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      placeholder="Type your answer..." />
+    <button id="micButton"></button>
+  </div>
+
+  <!-- Settings Screen -->
+  <div id="settingsScreen" class="screen settings">
+    <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+    <h1 style="margin-bottom: 30px;">Settings</h1>
+    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
+      <!-- Lives -->
+      <div class="setting-item">
+        <span class="setting-label">Lives</span>
+        <span class="setting-value">
+          <button id="livesMinus" onclick="changeSetting('lives', -1)">−</button>
+          <span id="livesSetting">3</span>
+          <button id="livesPlus" onclick="changeSetting('lives', 1)">+</button>
+        </span>
+      </div>
+
+      <!-- Lives Enabled -->
+      <div class="setting-item">
+        <span class="setting-label">Lives Enabled</span>
+        <span class="setting-value">
+          <span id="livesEnabledSetting" onclick="toggleSetting('livesEnabled')">Yes</span>
+        </span>
+      </div>
+
+      <!-- Questions Per Level -->
+      <div class="setting-item">
+        <span class="setting-label">Questions Per Level</span>
+        <span class="setting-value">
+          <button onclick="changeSetting('questionsPerLevel', -1)">−</button>
+          <span id="questionsPerLevelSetting">3</span>
+          <button onclick="changeSetting('questionsPerLevel', 1)">+</button>
+        </span>
+      </div>
+
+      <!-- Fall Speed -->
+      <div class="setting-item">
+        <span class="setting-label">Fall Speed</span>
+        <span class="setting-value">
+          <input type="range" min="0.1" max="150" step="0.1" value="2.5" onchange="updateFallSpeed(this.value)" style="width: 150px;">
+        </span>
+      </div>
+
+      <!-- Volume -->
+      <div class="setting-item">
         <span class="setting-label">Volume</span>
         <span class="setting-value">
           <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
         </span>
       </div>
 
+      <!-- Upload CSV -->
       <div class="setting-item">
         <span class="setting-label">Upload Questions</span>
-        <span class="setting-value">
-          <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)">
+        <span class="setting-value" style="display: flex; align-items: center;">
+          <label for="csvUpload" style="
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.6em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 6px;
+          ">Upload CSV</label>
+          <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)" style="display: none;">
+          <button onclick="showCSVHelp()" style="
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+          ">Help</button>
         </span>
       </div>
-        </div>
-    </div>
 
-    <script>
+      <!-- CSV Status Message -->
+      <div id="csvStatus" style="
+        margin-top: 8px;
+        font-size: 14px;
+        color: lime;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        pointer-events: none;
+      "></div>
+    </div>
+  </div>
+
+  <!-- Pause Screen (moved outside settings screen) -->
+  <div id="pauseScreen" class="screen pause-screen">
+    <div class="pause-content">
+      <div class="main-menu" onclick="resumeGame()">Resume</div>
+    </div>
+  </div>
+</body>
+
+
+      
+
+<script>
         const ASSETS = {
   win: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/Win.wav?raw=true",
   explosion: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/explosion.wav?raw=true",
@@ -222,6 +383,7 @@
   recordEnd: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_end.mp3?raw=true"
 };
 
+
 // Preload large background images
 const preloadMenuBg = new Image();
 preloadMenuBg.src = ASSETS.menuBackground;
@@ -230,13 +392,43 @@ preloadGameBg.src = ASSETS.gameBackground;
 const preloadPauseBg = new Image();
 preloadPauseBg.src = ASSETS.pauseBackground;
 
-        const music = new Audio(ASSETS.musicStart);
-        const ambiance = new Audio(ASSETS.musicGame);
-        music.loop = true;
-        ambiance.loop = true;
+const music = new Audio(ASSETS.musicStart);
+const ambiance = new Audio(ASSETS.musicGame);
+music.loop = true;
+ambiance.loop = true;
+const micInput = document.querySelector('#userInput');
+let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
+let isPaused = false;
+const pauseSound = new Audio(ASSETS.soundPause);
+const unpauseSound = new Audio(ASSETS.soundUnpause);
+asteroidImg.src = ASSETS.asteroid;
+let quizData = [
+  { question: "1", answer: "a" },
+  { question: "2", answer: "b" },
+  { question: "3", answer: "c" },
+];
+let score = 0;
+let lives = 3;
+let missedAnswers = [];
+let currentIndex = 0;
+let level = 1;
+let totalCorrect = 0;
+let settings = {
+  lives: 3,
+  livesEnabled: true,
+  questionsPerLevel: 3,
+  fallSpeed: 1.2 // <-- add this line
+};
+let suppressNextEnter = false;
+let suppressEnterUntil = 0; 
+const correctSound = new Audio(ASSETS.correct);
+const incorrectSound = new Audio(ASSETS.incorrect);
 
-        const micInput = document.querySelector('#userInput');
-        if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
+document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
+document.documentElement.style.setProperty('--pause-bg', `url('${ASSETS.pauseBackground}') no-repeat center center/cover`);
+
+if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.continuous = false;
@@ -245,9 +437,10 @@ preloadPauseBg.src = ASSETS.pauseBackground;
 
             const micButton = document.querySelector('#micButton');
             let isRecording = false;
-let readyToRecord = true;
-let silenceTimer = null;
-    micButton.addEventListener('click', () => {
+            let readyToRecord = true;
+            let silenceTimer = null;
+    
+            micButton.addEventListener('click', () => {
     try {
         if (!isRecording && readyToRecord) {
         readyToRecord = false;
@@ -292,20 +485,13 @@ let silenceTimer = null;
             recognition.onerror = (event) => {
                 console.error('Speech recognition error:', event.error);
             };
-        }
+}
 
         document.body.addEventListener("click", () => {
             if (music.paused && !gameStarted) {
                 music.play().catch(error => console.log("User interaction required for audio playback."));
             }
         });
-
-        let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
-        let isPaused = false;
-        const pauseSound = new Audio(ASSETS.soundPause);
-        const unpauseSound = new Audio(ASSETS.soundUnpause);
-        let fallSpeedMultiplier = 2;
-        asteroidImg.src = ASSETS.asteroid;
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
@@ -314,43 +500,66 @@ let silenceTimer = null;
             document.getElementById(screenId).style.display = 'flex';
 
             if (screenId === 'gameScreen') {
-            isPaused = false;
+                isPaused = false;
                 gameStarted = true;
                 music.pause();
                 ambiance.play();
                 startAsteroids();
+
                 if (window.innerWidth <= 768) {
                     document.getElementById("userInput").style.display = "none";
                     document.getElementById("micButton").style.display = "block";
-                    fallSpeedMultiplier = 1.5;
+
+                    // Set slider to default mobile-friendly value *only* if the user hasn't changed it
+                    const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+                    if (!gameStarted && slider && slider.value == "2.5") {
+                        slider.value = 1.5;
+                        updateFallSpeed(1.5);
+                    }
                 } else {
                     document.getElementById("userInput").style.display = "block";
                     document.getElementById("micButton").style.display = "block";
                 }
+
                 const inputBox = document.getElementById('userInput');
                 if (inputBox) {
                     inputBox.focus();
                 }
+
                 document.addEventListener('mousedown', function(event) {
-    const inputBox = document.getElementById('userInput');
-    const micButton = document.getElementById('micButton');
-    if (event.target !== inputBox && event.target !== micButton) {
-        event.preventDefault();
-        inputBox.focus();
-    }
-}, true);
+                    const inputBox = document.getElementById('userInput');
+                    const micButton = document.getElementById('micButton');
+                    const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+                    if (
+                        event.target !== inputBox &&
+                        event.target !== micButton &&
+                        !event.target.closest('input[type="range"]')
+                    ) {
+                        event.preventDefault();
+                        inputBox.focus();
+                    }
+
+                }, true);
+
             } else {
-            gameStarted = false;
-            isPaused = true;
+                gameStarted = false;
+                isPaused = true;
                 ambiance.pause();
                 music.play();
+
+                // Sync fall speed slider with current setting when going to settings screen
+                if (screenId === 'settingsScreen') {
+                    const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+                    if (slider) {
+                        slider.value = settings.fallSpeed;
+                    }
+                }
             }
         }
 
         function updateFallSpeed(value) {
-            fallSpeedMultiplier = parseFloat(value);
+          settings.fallSpeed = parseFloat(value);
         }
-
 
         function updateVolume(value) {
   const vol = parseFloat(value);
@@ -362,245 +571,291 @@ let silenceTimer = null;
   incorrectSound.volume = vol;
 }
 
-        function pauseGame() {
-            isPaused = true;
-            document.getElementById('gameScreen').style.display = 'none';
-            document.getElementById('pauseScreen').style.display = 'flex';
-            pauseSound.play();
-        }
+function pauseGame() {
+  isPaused = true;
+  document.getElementById("gameScreen").style.display = "none";
+  document.getElementById("pauseScreen").style.display = "flex";
+  pauseSound.play();
+}
 
-        function resumeGame() {
-    isPaused = false;
-    document.getElementById('pauseScreen').style.display = 'none';
-    document.getElementById('gameScreen').style.display = 'flex';
-    unpauseSound.play();
-    const inputBox = document.getElementById('userInput');
-    if (inputBox) {
-        inputBox.focus();
-    }
-    requestAnimationFrame(updateAsteroids);}
+function resumeGame() {
+  isPaused = false;
+  document.getElementById("pauseScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display = "flex";
+  unpauseSound.play();
+  const inputBox = document.getElementById("userInput");
+  if (inputBox) inputBox.focus();
+  requestAnimationFrame(updateAsteroids);
+}
 
         function quitGame() {
             window.open('', '_self', '');
             window.close();
         }
 
-//START GAME
-function startAsteroids() {
-
+        function startAsteroids() {
   canvas = document.getElementById("asteroidCanvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   ctx = canvas.getContext("2d");
-  asteroid = null;
-  cancelAnimationFrame(animationId);
-  score = 0;
-  lives = settings.livesEnabled ? settings.lives : Infinity;
-    level = 1;
-    correctStreak = 0;
-    missedAnswers = [];
-    document.getElementById("score").innerText = score;
-    document.getElementById("lives").innerText = lives;
-    document.getElementById("level").innerText = level;
-    document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
 
+  cancelAnimationFrame(animationId);
+  asteroid = null;
+
+  score = 0;
+  totalCorrect = 0; 
+  lives = settings.livesEnabled ? settings.lives : Infinity;
+  level = 1;
+  fallSpeedMultiplier = settings.fallSpeed;
+  missedAnswers = [];
   currentIndex = 0;
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
+  document.getElementById("level").innerText = level;
+
   nextQuestion();
   requestAnimationFrame(updateAsteroids);
-        }
+}
 
-        function showLevelUpMessage(level) {
-    const levelMsg = document.createElement("div");
-    levelMsg.innerText = `LEVEL ${level}`;
-    levelMsg.style.position = "absolute";
-    levelMsg.style.top = "40%";
-    levelMsg.style.left = "50%";
-    levelMsg.style.transform = "translate(-50%, -50%)";
-    levelMsg.style.background = "black";
-    levelMsg.style.color = "white";
-    levelMsg.style.fontSize = "6vw";
-    levelMsg.style.padding = "20px 40px";
-    levelMsg.style.zIndex = 9999;
-    levelMsg.style.borderRadius = "12px";
-    levelMsg.style.fontFamily = "'Courier New', monospace";
-    document.body.appendChild(levelMsg);
-    setTimeout(() => document.body.removeChild(levelMsg), 2000);
-    }
+function showLevelUpMessage(level) {
+  const levelMsg = document.createElement("div");
+  levelMsg.innerText = `LEVEL ${level}`;
+  levelMsg.style.position = "absolute";
+  levelMsg.style.top = "40%";
+  levelMsg.style.left = "50%";
+  levelMsg.style.transform = "translate(-50%, -50%)";
+  levelMsg.style.background = "black";
+  levelMsg.style.color = "white";
+  levelMsg.style.fontSize = "6vw";
+  levelMsg.style.padding = "20px 40px";
+  levelMsg.style.zIndex = 9999;
+  levelMsg.style.borderRadius = "12px";
+  levelMsg.style.fontFamily = "'Courier New', monospace";
 
-        function createAsteroid() {
+  document.body.appendChild(levelMsg);
+
+  // Pause gameplay and suppress input
+  isPaused = true;
+  suppressNextEnter = true;
+
+  setTimeout(() => {
+    document.body.removeChild(levelMsg);
+    isPaused = false;
+    suppressNextEnter = false;
+    requestAnimationFrame(updateAsteroids); // Resume game
+  }, 1500);
+}
+
+
+
+function createAsteroid() {
   const q = quizData[currentIndex]?.question || "";
   const isMobile = window.innerWidth <= 768;
   const baseSize = isMobile ? 200 : 400;
   const centerOffset = canvas.width / 2 - baseSize / 2;
   const direction = Math.random() < 0.5 ? -1 : 1;
   const rotationSpeed = direction * (Math.random() * 0.000000001 - 0.01);
-        
-  return {
-                x: centerOffset + (Math.random() * 200 - 25),
-                y: -50,
-                size: baseSize,
-                speed: .5 * fallSpeedMultiplier,
-                angle: 0,
-                rotationSpeed: rotationSpeed,
-    question: q
-        }}
 
-        function updateAsteroids() {
+  return {
+    x: centerOffset + (Math.random() * 200 - 25),
+    y: -50,
+    size: baseSize,
+    speed: 0.5 * fallSpeedMultiplier, // ✅ Use the current speed multiplier
+    angle: 0,
+    rotationSpeed: rotationSpeed,
+    question: q
+  };
+}
+
+
+function updateAsteroids() {
   if (isPaused) return;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!asteroid) {
     asteroid = createAsteroid();
   }
 
-  if (asteroid) {
-    asteroid.y += asteroid.speed;
-    ctx.save();
-    ctx.translate(asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size / 2);
-    ctx.rotate(asteroid.angle);
-    ctx.drawImage(asteroidImg, -asteroid.size / 2, -asteroid.size / 2, asteroid.size, asteroid.size);
-    ctx.restore();
+  asteroid.y += asteroid.speed;
 
-    // Draw question separately so it doesn't rotate
-    ctx.font = "20px Courier New";
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    const maxWidth = asteroid.size;
-    const words = asteroid.question.split(' ');
-    let line = '';
-    let y = asteroid.y - 10;
-    ctx.textAlign = 'center';
-    ctx.font = "20px Courier New";
+  // Draw asteroid with rotation
+  ctx.save();
+  ctx.translate(asteroid.x + asteroid.size / 2, asteroid.y + asteroid.size / 2);
+  ctx.rotate(asteroid.angle);
+  ctx.drawImage(asteroidImg, -asteroid.size / 2, -asteroid.size / 2, asteroid.size, asteroid.size);
+  ctx.restore();
 
-    for (let i = 0; i < words.length; i++) {
-        const testLine = line + words[i] + ' ';
-        const testWidth = ctx.measureText(testLine).width;
-        if (testWidth > maxWidth) {
-            ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
-            line = words[i] + ' ';
-            y += 22;
-        } else {
-            line = testLine;
-        }
+  // Draw question text
+  ctx.font = "20px Courier New";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.shadowColor = "black";
+  ctx.shadowBlur = 4;
+
+  const maxWidth = asteroid.size;
+  const words = asteroid.question.split(' ');
+  let line = '';
+  let y = asteroid.y + asteroid.size / 2 - 10;
+
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + ' ';
+    const testWidth = ctx.measureText(testLine).width;
+    if (testWidth > maxWidth) {
+      ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
+      line = words[i] + ' ';
+      y += 22;
+    } else {
+      line = testLine;
     }
-    ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
+  }
+  ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
+  ctx.shadowBlur = 0;
 
+  asteroid.angle += asteroid.rotationSpeed;
 
-    asteroid.angle += asteroid.rotationSpeed;
+  // Collision with input box
+  const textBox = document.getElementById("userInput");
+  const textBoxRect = textBox.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  const textBoxTopRelativeToCanvas = textBoxRect.top - canvasRect.top;
+  const asteroidBottom = asteroid.y + asteroid.size;
 
-    const textBox = document.getElementById("userInput");
-    const textBoxRect = textBox.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
-    const textBoxTopRelativeToCanvas = textBoxRect.top - canvasRect.top;
-    const asteroidBottom = asteroid.y + asteroid.size;
+  if (
+    asteroidBottom >= textBoxTopRelativeToCanvas &&
+    document.getElementById("gameScreen").style.display === "flex"
+  ) {
+    new Audio(ASSETS.explosion).play();
+    lives--;
+    missedAnswers.push({
+      question: quizData[currentIndex].question,
+      answer: quizData[currentIndex].answer
+    });
 
-    if (asteroidBottom >= textBoxTopRelativeToCanvas && document.getElementById('gameScreen').style.display === 'flex') {
-      new Audio(ASSETS.explosion).play();
-      lives--;
-      missedAnswers.push({ question: quizData[currentIndex].question, answer: quizData[currentIndex].answer });
-      document.getElementById("lives").innerText = lives;
-      isPaused = true;
-      ctx.fillStyle = "red";
-      ctx.font = "32px Courier New";
-      ctx.fillText("-1 Life", canvas.width / 2, canvas.height / 2);
-      ctx.fillStyle = "white";
-      ctx.fillText("Correct answer was: " + quizData[currentIndex].answer, canvas.width / 2, canvas.height / 2 + 40);
-      if (lives <= 0) {
-        new Audio(ASSETS.win).play();
-        document.getElementById('gameScreen').style.display = 'none';
-        showGameOver();
-      } else {
-        setTimeout(() => {
+    document.getElementById("lives").innerText = lives === Infinity ? "∞" : lives;
+    isPaused = true;
+
+    showOverlay(
+      {
+        title: "-1 Life",
+        message: "Correct answer was: " + quizData[currentIndex].answer
+      },
+      () => {
+        if (lives <= 0) {
+          new Audio(ASSETS.win).play();
+          document.getElementById("gameScreen").style.display = "none";
+          showGameOver();
+        } else {
           isPaused = false;
           currentIndex = (currentIndex + 1) % quizData.length;
           nextQuestion();
           requestAnimationFrame(updateAsteroids);
-        }, 2000);
-      }
-    }
-            }
-
-            animationId = requestAnimationFrame(updateAsteroids);
         }
+      }
+    );
+  }
 
-        window.addEventListener('resize', () => {
-            if (canvas) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-        });
-    document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
-document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
-document.documentElement.style.setProperty('--pause-bg', `url('${ASSETS.pauseBackground}') no-repeat center center/cover`);
-let quizData = [
-  { question: "1", answer: "a" },
-  { question: "2", answer: "b" },
-  { question: "3", answer: "c" },
-];
+  animationId = requestAnimationFrame(updateAsteroids);
+}
+
+window.addEventListener('resize', () => {
+  if (canvas) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+});
 
 function handleCSVUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function (e) {
     const text = e.target.result;
-    const rows = text.split('').filter(r => r.trim());
+    const rows = text.split('\n').filter(r => r.trim());
+
     const data = rows.map(row => {
       const [question, answer] = row.split(',');
-      return { question: question?.trim(), answer: answer?.trim() };
+      return {
+        question: question?.trim(),
+        answer: answer?.trim()
+      };
     }).filter(item => item.question && item.answer);
-    if (data.length) quizData = data;
-    console.log("Uploaded quiz data:", quizData);
+
+    const status = document.getElementById("csvStatus");
+
+    if (data.length > 0) {
+      quizData = data;
+      currentIndex = 0;
+      console.log("✅ Imported CSV questions:", quizData);
+
+      status.textContent = "✅ Questions updated!";
+      status.style.color = "lime";
+      status.style.opacity = "1";
+    } else {
+      status.textContent = "❌ Invalid CSV format. Use: question,answer";
+      status.style.color = "red";
+      status.style.opacity = "1";
+    }
+
+    // Fade out after 3 seconds
+    setTimeout(() => {
+      status.style.opacity = "0";
+    }, 3000);
   };
+
   reader.readAsText(file);
 }
-let score = 0;
-let lives = 3;
-let missedAnswers = [];
-let currentIndex = 0;
-let level = 1;
-let correctStreak = 0;
-let levelsEnabled = true;
-let settings = {
-  lives: 3,
-  livesEnabled: true, // renamed from levelsEnabled
-  questionsPerLevel: 3
-};
-const correctSound = new Audio(ASSETS.correct);
-const incorrectSound = new Audio(ASSETS.incorrect);
+
+
+
+
 
 function nextQuestion() {
   asteroid = createAsteroid();
 }
 
-//answer handler
 document.getElementById("userInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
+    if (suppressNextEnter) {
+      suppressNextEnter = false; // ✅ skip processing, consume the flag
+      this.value = ""; // optionally clear input if needed
+      return;
+    }
     const input = this.value.trim().toLowerCase();
     const expected = quizData[currentIndex]?.answer.toLowerCase();
+
     if (input === expected) {
-        score++;
-        correctStreak++;
-        document.getElementById("score").innerText = score;
-        correctSound.play();
-        this.value = "";
+      score++;
+      totalCorrect++;
+      document.getElementById("score").innerText = score;
+      correctSound.play();
+      this.value = "";
 
-        if (settings.levelsEnabled && correctStreak % settings.questionsPerLevel === 0) {
-            level++;
-            fallSpeedMultiplier += 5;
-            document.getElementById("level").innerText = level;
-            showLevelUpMessage(level);
-        }
+      // ✅ Level up based on total correct answers
+      if (
+        settings.questionsPerLevel > 0 &&
+        totalCorrect % settings.questionsPerLevel === 0
+      ) {
+        level++;
+        fallSpeedMultiplier += 0.5; // subtle increase
+        document.getElementById("level").innerText = level;
+        showLevelUpMessage(level);
+      }
 
-        currentIndex = (currentIndex + 1) % quizData.length;
-        nextQuestion();
+      currentIndex = (currentIndex + 1) % quizData.length;
+      nextQuestion();
+
     } else {
+      // ❌ Wrong answer
       score--;
       document.getElementById("score").innerText = score;
       incorrectSound.play();
     }
   }
 });
+
 
 function showGameOver() {
   const overlay = document.createElement("div");
@@ -719,14 +974,88 @@ function toggleSetting(key) {
   }
 }
 
+function skipQuestion() {
+  incorrectSound.play();
+  score -= 1;
+  document.getElementById("score").innerText = score;
 
+  isPaused = true;
+  showOverlay(
+    {
+      title: "-1 Point (Skipped)",
+      message: "Correct answer was: " + quizData[currentIndex].answer
+    },
+    () => {
+      isPaused = false;
+      currentIndex = (currentIndex + 1) % quizData.length;
+      nextQuestion();
+      requestAnimationFrame(updateAsteroids);
+    }
+  );
+}
+
+function showOverlay({ title, message, titleColor = "red" }, callback) {
+  suppressNextEnter = true; // 🚫 block next Enter key
+
+  const overlay = document.createElement("div");
+  overlay.id = "lifeLostOverlay";
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100vw";
+  overlay.style.height = "100vh";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  overlay.style.color = "white";
+  overlay.style.fontFamily = "'Courier New', monospace";
+  overlay.style.fontSize = "24px";
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "9999";
+
+  const titleText = document.createElement("div");
+  titleText.textContent = title;
+  titleText.style.color = titleColor;
+  titleText.style.fontSize = "32px";
+  titleText.style.marginBottom = "20px";
+
+  const messageText = document.createElement("div");
+  messageText.textContent = message;
+  messageText.style.color = "white";
+
+  overlay.appendChild(titleText);
+  overlay.appendChild(messageText);
+  document.body.appendChild(overlay);
+
+  const proceed = () => {
+    document.removeEventListener("keydown", onKey);
+    document.removeEventListener("mousedown", onClick);
+    if (overlay) document.body.removeChild(overlay);
+    callback();
+  };
+
+  const onKey = (e) => {
+    if (e.key === "Enter" || e.key === "Escape") {
+      e.preventDefault();
+      proceed();
+    }
+  };
+
+  const onClick = () => {
+    proceed();
+  };
+
+  document.addEventListener("keydown", onKey);
+  document.addEventListener("mousedown", onClick);
+}
+
+
+
+function showCSVHelp() {
+  alert("Your CSV file should have two columns, formatted like this:\n\nWhat is 2+2?,4\nCapital of France?,Paris");
+}
 
 </script>
-
-    </body>
-
-<div id="pauseScreen" class="screen settings" style="background: url('https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/images/pause_background.jpg?raw=true') no-repeat center center/cover; display: none;">
-    <div class="main-menu" style="position: relative; top: 0; left: 0; font-size: 5vw; padding: 20px;" onclick="resumeGame()">Resume</div>
-</div>
 
 </html>
