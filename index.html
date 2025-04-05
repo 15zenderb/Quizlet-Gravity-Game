@@ -470,6 +470,8 @@ let settings = {
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
 let micPermissionRequested = false;
+let shuffledQuestions = [];
+let shuffledIndex = 0;
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
 
@@ -633,6 +635,22 @@ function showScreen(screenId) {
   }
 }
 
+function shuffleQuestions() {
+  shuffledQuestions = quizData.slice(); // copy array
+  for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+  }
+  shuffledIndex = 0;
+}
+
+function getNextQuestion() {
+  if (shuffledIndex >= shuffledQuestions.length) {
+    shuffleQuestions();
+  }
+  return shuffledQuestions[shuffledIndex++];
+}
+
 function updateFallSpeed(value) {
   settings.fallSpeed = parseFloat(value);
 }
@@ -722,7 +740,8 @@ function showLevelUpMessage(level) {
 
 
 function createAsteroid() {
-  const q = quizData[currentIndex]?.question || "";
+  const qObj = getNextQuestion();
+  const q = qObj.question;
   const isMobile = window.innerWidth <= 768;
   const baseSize = isMobile ? 200 : 400;
   const centerOffset = canvas.width / 2 - baseSize / 2;
