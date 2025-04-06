@@ -257,23 +257,34 @@
 
 
 
-      @media (min-width: 768px) {
-        .menu-option, .main-menu {
-          font-size: 36px;
-        }
-    
-        h1 {
-          font-size: 72px;
-        }
-    
-        .setting-item {
-          font-size: 24px;
-        }
-    
-        .menu-option.menu-btn {
-          font-size: 16px;
-        }
+    @media (max-width: 768px) {
+      #menuScreen h1 {
+        font-size: 8vw;
+        text-align: center;
       }
+
+      .menu-option {
+        font-size: 6vw;
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        width: 80%;
+        text-align: center;
+      }
+
+      .menu-option:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: yellow;
+      }
+
+      #menuScreen {
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px;
+        gap: 20px;
+      }
+    }
+
 
       
     </style>    
@@ -453,9 +464,9 @@ const pauseSound = new Audio(ASSETS.soundPause);
 const unpauseSound = new Audio(ASSETS.soundUnpause);
 asteroidImg.src = ASSETS.asteroid;
 let quizData = [
-  { question: "1", answer: "a" },
-  { question: "2", answer: "b" },
-  { question: "3", answer: "c" },
+  { question: "a", answer: "one" },
+  { question: "b", answer: "two" },
+  { question: "c", answer: "three" },
 ];
 let score = 0;
 let lives = 3;
@@ -608,6 +619,10 @@ function showScreen(screenId) {
   });
   document.getElementById(screenId).style.display = 'flex';
 
+  const isMobile = window.innerWidth <= 768;
+  const userInputEl = document.getElementById("userInput");
+  const micButtonEl = document.getElementById("micButton");
+
   if (screenId === 'gameScreen') {
     isPaused = false;
     gameStarted = true;
@@ -615,36 +630,25 @@ function showScreen(screenId) {
     ambiance.play();
     startAsteroids();
 
-    if (window.innerWidth <= 768) {
-      document.getElementById("userInput").style.display = "none";
-      document.getElementById("micButton").style.display = "block";
-
-      const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
-      if (!gameStarted && slider && slider.value == "2.5") {
-        slider.value = 1.5;
-        updateFallSpeed(1.5);
-      }
+    // Mic UI behavior
+    if (isMobile) {
+      userInputEl.style.display = "block";   // ✅ keep input visible
+      micButtonEl.style.display = "block";
+      // ❌ Don't auto-focus on mobile
     } else {
-      document.getElementById("userInput").style.display = "block";
-      document.getElementById("micButton").style.display = "block";
-    }
-
-    const inputBox = document.getElementById('userInput');
-    if (inputBox) {
-      inputBox.focus();
+      userInputEl.style.display = "block";
+      micButtonEl.style.display = "block";
+      userInputEl.focus();                   // ✅ focus on desktop
     }
 
     document.addEventListener('mousedown', function (event) {
-      const inputBox = document.getElementById('userInput');
-      const micButton = document.getElementById('micButton');
-      const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       if (
-        event.target !== inputBox &&
-        event.target !== micButton &&
+        event.target !== userInputEl &&
+        event.target !== micButtonEl &&
         !event.target.closest('input[type="range"]')
       ) {
         event.preventDefault();
-        inputBox.focus();
+        if (!isMobile) userInputEl.focus(); // ✅ only refocus on desktop
       }
     }, true);
   } else {
@@ -659,16 +663,12 @@ function showScreen(screenId) {
 
       if (slider) {
         // Reverse map fallSpeed to slider value
-        const minSpeed = 0.15; // ✅ match here too
+        const minSpeed = 0.3;
         const maxSpeed = 20;
         const curveFactor = 2;
 
-        const percent = Math.pow(
-          Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed),
-          1 / curveFactor
-        );
+        const percent = Math.pow(Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed), 1 / curveFactor);
         const sliderValue = Math.round(percent * 100);
-
 
         slider.value = sliderValue;
 
@@ -679,6 +679,7 @@ function showScreen(screenId) {
     }
   }
 }
+
 
 
 function getNextShuffledQuestion() {
@@ -871,7 +872,7 @@ function updateAsteroids() {
     if (testWidth > maxWidth) {
       ctx.fillText(line, asteroid.x + asteroid.size / 2, y);
       line = words[i] + ' ';
-      y += 32; //spacing for asteroid text
+      y += 32; // spacing for asteroid text
     } else {
       line = testLine;
     }
@@ -881,15 +882,18 @@ function updateAsteroids() {
 
   asteroid.angle += asteroid.rotationSpeed;
 
-  // Collision with input box
+  // 🚨 Collision detection
   const textBox = document.getElementById("userInput");
-  const textBoxRect = textBox.getBoundingClientRect();
   const canvasRect = canvas.getBoundingClientRect();
-  const textBoxTopRelativeToCanvas = textBoxRect.top - canvasRect.top;
+
+  const collisionY = textBox && textBox.offsetParent !== null
+    ? textBox.getBoundingClientRect().top - canvasRect.top
+    : canvas.height - 80; // fallback bottom zone on mobile
+
   const asteroidBottom = asteroid.y + asteroid.size;
 
   if (
-    asteroidBottom >= textBoxTopRelativeToCanvas &&
+    asteroidBottom >= collisionY &&
     document.getElementById("gameScreen").style.display === "flex"
   ) {
     new Audio(ASSETS.explosion).play();
@@ -924,6 +928,7 @@ function updateAsteroids() {
 
   animationId = requestAnimationFrame(updateAsteroids);
 }
+
 
 window.addEventListener('resize', () => {
   if (canvas) {
