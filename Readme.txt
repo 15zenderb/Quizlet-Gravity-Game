@@ -1,7 +1,7 @@
 Hey Friends,
 
 I made this code because I found the gravity game on Quizlet extremely helpful for learning some great information.
-Unfortunately, they you can no longer access it on the website, so I've coded a new game for the world. 
+Unfortunately, they removed it and you can no longer access it on the website, so I've coded a new game for the world. 
 
 You can modify the questions and answers by uploading your own "Questions.csv" file and pasting it into the main directory. 
 
