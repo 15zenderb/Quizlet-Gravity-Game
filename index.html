@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Memory Quiz Game</title>
     <style>
       body {
@@ -48,14 +48,14 @@
       }
     
       h1 {
-        font-size: 4vw;
-        font-family: 'Comic Sans MS', cursive;
+        font-size: 12vw;
+        font-family: 'Comic Sans MS';
         margin-bottom: 2vh;
       }
     
       .menu-option,
       .main-menu {
-        font-size: 2vw;
+        font-size: 5vw;
         cursor: pointer;
         margin: 2vh;
         font-family: Arial, sans-serif;
@@ -67,7 +67,6 @@
         color: yellow;
       }
     
-      /* Game screen top-left buttons */
       .game-buttons {
         position: absolute;
         font-size: 2;
@@ -114,7 +113,7 @@
         bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 30%; /* made it less wide */
+        width: 30%;
         padding: 10px;
         font-size: 18px;
         border-radius: 8px;
@@ -122,7 +121,7 @@
         z-index: 10;
         background-color: rgba(255, 255, 255, 0.6);
       }
-
+    
       #micButton {
         position: absolute;
         bottom: 10px;
@@ -135,22 +134,20 @@
         border-radius: 50%;
         cursor: pointer;
         z-index: 11;
-        /* Anchor it to the right edge of the input */
-        left: calc(50% + 17% + 10px); /* 22.5% is half of the input width */
+        left: calc(50% + 17% + 10px);
       }
-
     
       .glow {
         box-shadow: 0 0 12px 4px rgba(255, 255, 0, 0.8);
       }
     
-
       #settingsScreen {
         background: var(--pause-bg);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
       }
+    
       .setting-item {
         display: flex;
         justify-content: space-between;
@@ -210,84 +207,115 @@
         transition: opacity 1s ease-in-out;
         pointer-events: none;
       }
-
+    
       #endGameScreen {
         background: var(--pause-bg);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
       }
-      
+    
       .level-up-message {
-      position: fixed; /* ← use fixed instead of absolute for true viewport centering */
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);  
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      padding: 30px 60px;
-      background: radial-gradient(circle at center, #220000 40%, #000 100%);
-      color: #ff4d4d;
-      font-size: 5vw;
-      font-weight: bold;
-      font-family: 'Courier New', monospace;
-      text-shadow: 0 0 6px #ff4d4d;
-      border: 2px solid #ff4d4d;
-      border-radius: 16px;
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      pointer-events: none;
-      box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
-    }
-
-    .level-up-message.show {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.05);
-      animation: pulse-glow-red 1.5s ease-in-out;
-    }
-
-    @keyframes pulse-glow-red {
-      0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px #ff4d4d; }
-      50% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 14px #ff4d4d; }
-      100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px #ff4d4d; }
-    }
-
-
-
-
-    @media (max-width: 768px) {
-      #menuScreen h1 {
-        font-size: 8vw;
-        text-align: center;
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        padding: 30px 60px;
+        background: radial-gradient(circle at center, #220000 40%, #000 100%);
+        color: #ff4d4d;
+        font-size: 5vw;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 6px #ff4d4d;
+        border: 2px solid #ff4d4d;
+        border-radius: 16px;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        pointer-events: none;
+        box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
       }
-
-      .menu-option {
-        font-size: 6vw;
-        padding: 12px 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        width: 80%;
-        text-align: center;
+    
+      .level-up-message.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+        animation: pulse-glow-red 1.5s ease-in-out;
       }
-
-      .menu-option:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: yellow;
+    
+      @keyframes pulse-glow-red {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+          box-shadow: 0 0 6px #ff4d4d;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.1);
+          box-shadow: 0 0 14px #ff4d4d;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+          box-shadow: 0 0 6px #ff4d4d;
+        }
       }
+    
+      /* MOBILE STYLES (already working well) */
+@media (max-width: 768px) {
+  /* Start screen menu buttons */
+  #menuScreen .menu-option {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 6px rgba(61, 59, 59, 0.2);
+    transition: background-color 0.3s ease;
+  }
 
-      #menuScreen {
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 20px;
-        gap: 20px;
-      }
-    }
+  #menuScreen .menu-option:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
 
+  /* Settings menu mobile padding */
+  #settingsScreen > div {
+    padding: 0 50px; /* Add horizontal padding */
+    box-sizing: border-box;
+    width: 100%; /* Full width container */
+    max-width: 100%; /* Prevent stretching beyond screen */
+  }
 
-      
-    </style>    
+  .setting-item {
+    width: 100%;
+    max-width: 600px; /* Limit width of each item */
+    margin: 0 auto; /* Center the item */
+  }
+
+  #asteroidCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: 0;
+  touch-action: none;
+  }
+  
+}
+
+/* DESKTOP RESET */
+@media (min-width: 769px) {
+  /* Restore font sizes */
+  .menu-option,
+  .main-menu {
+    font-size: 36px;
+  }
+
+  h1 {
+    font-size: 72px;
+  }
+
+  .setting-item {
+    font-size: 24px;
+    padding: 15px 20px; /* reset padding to standard */
+  }
+}
+    </style>   
     
 </head>
 <body>
@@ -296,7 +324,7 @@
     <h1>Galactic Recall Quiz Game</h1>
     <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
     <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
-    <div class="menu-option" onclick="toggleFullscreen()">Fullscreen Mode</div>
+    <div class="menu-option" onclick="toggleFullscreen()">Fullscreen</div>
     <div class="menu-option" onclick="quitGame()">Quit</div>
   </div>
 
@@ -327,7 +355,7 @@
   <div id="settingsScreen" class="screen settings">
     <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
     <h1 style="margin-bottom: 30px;">Settings</h1>
-    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
+    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px; padding-left: 10px; padding-right: 10px;">
       
       <!-- Lives -->
       <div class="setting-item">
@@ -455,6 +483,7 @@ const preloadPauseBg = new Image();
 preloadPauseBg.src = ASSETS.pauseBackground;
 
 const userInput = document.getElementById("userInput");
+const hud = document.getElementById("hud");
 const music = new Audio(ASSETS.musicStart);
 const ambiance = new Audio(ASSETS.musicGame);
 music.loop = true;
@@ -610,6 +639,10 @@ function submitMicInput() {
 
 //end of mic stuff
 
+function lockScroll(lock) {
+  document.body.style.overflow = lock ? "hidden" : "";
+}
+
 function toggleFullscreen() {
   const el = document.documentElement;
 
@@ -621,6 +654,18 @@ function toggleFullscreen() {
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
   }
 }
+
+userInput.addEventListener("focus", () => {
+  if (window.innerWidth <= 768) {
+    userInput.style.bottom = "120px";
+    if (hud) hud.style.bottom = "120px";
+  }
+});
+
+userInput.addEventListener("blur", () => {
+  userInput.style.bottom = "10px";
+  if (hud) hud.style.bottom = "10px";
+});
 
 
 document.body.addEventListener("click", () => {
@@ -635,9 +680,10 @@ function showScreen(screenId) {
   });
   document.getElementById(screenId).style.display = 'flex';
 
-  const isMobile = window.innerWidth <= 768;
-  const userInputEl = document.getElementById("userInput");
-  const micButtonEl = document.getElementById("micButton");
+  // Lock scroll on mobile for game screen
+  if (window.innerWidth <= 768) {
+    document.body.style.overflow = screenId === 'gameScreen' ? 'hidden' : '';
+  }
 
   if (screenId === 'gameScreen') {
     isPaused = false;
@@ -646,46 +692,54 @@ function showScreen(screenId) {
     ambiance.play();
     startAsteroids();
 
-    // Mic UI behavior
-    if (isMobile) {
-      userInputEl.style.display = "block";   // ✅ keep input visible
-      micButtonEl.style.display = "block";
-      // ❌ Don't auto-focus on mobile
+    // Hide keyboard input on mobile, show mic
+    if (window.innerWidth <= 768) {
+      document.getElementById("userInput").style.display = "block";
+      document.getElementById("userInput").blur(); // Don't auto-focus
+      document.getElementById("micButton").style.display = "block";
     } else {
-      userInputEl.style.display = "block";
-      micButtonEl.style.display = "block";
-      userInputEl.focus();                   // ✅ focus on desktop
+      document.getElementById("userInput").style.display = "block";
+      document.getElementById("micButton").style.display = "block";
+      const inputBox = document.getElementById('userInput');
+      if (inputBox) {
+        inputBox.focus();
+      }
     }
 
     document.addEventListener('mousedown', function (event) {
+      const inputBox = document.getElementById('userInput');
+      const micButton = document.getElementById('micButton');
       if (
-        event.target !== userInputEl &&
-        event.target !== micButtonEl &&
+        event.target !== inputBox &&
+        event.target !== micButton &&
         !event.target.closest('input[type="range"]')
       ) {
         event.preventDefault();
-        if (!isMobile) userInputEl.focus(); // ✅ only refocus on desktop
+        if (window.innerWidth > 768) inputBox.focus();
       }
     }, true);
+
   } else {
     gameStarted = false;
     isPaused = true;
     ambiance.pause();
     music.play();
 
+    // Reset slider position when entering settings
     if (screenId === 'settingsScreen') {
       const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       const display = document.getElementById("fallSpeedDisplay");
 
       if (slider) {
-        // Reverse map fallSpeed to slider value
         const minSpeed = 0.3;
         const maxSpeed = 20;
         const curveFactor = 2;
 
-        const percent = Math.pow(Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed), 1 / curveFactor);
+        const percent = Math.pow(
+          Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed),
+          1 / curveFactor
+        );
         const sliderValue = Math.round(percent * 100);
-
         slider.value = sliderValue;
 
         if (display) {
@@ -695,6 +749,7 @@ function showScreen(screenId) {
     }
   }
 }
+
 
 
 
