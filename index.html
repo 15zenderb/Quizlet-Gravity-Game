@@ -296,6 +296,7 @@
     <h1>Galactic Recall Quiz Game</h1>
     <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
     <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
+    <div class="menu-option" onclick="toggleFullscreen()">Fullscreen Mode</div>
     <div class="menu-option" onclick="quitGame()">Quit</div>
   </div>
 
@@ -532,6 +533,10 @@ function initMic() {
     return;
   }
 
+  // ✅ Suppress mic sounds on Android Chrome
+  const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
+  const playMicSound = !isAndroidChrome;
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SpeechRecognition();
   recognition.continuous = false;
@@ -542,13 +547,14 @@ function initMic() {
     isRecording = true;
     speechDetected = false;
     micButton.classList.add("glow");
-    new Audio(ASSETS.recordStart).play();
+
+    if (playMicSound) new Audio(ASSETS.recordStart).play();
 
     // Timeout fallback (4s)
     silenceTimer = setTimeout(() => {
       console.warn("⏱️ No speech detected — forcing stop");
       recognition.abort();
-    }, 3000);
+    }, 4000);
   };
 
   recognition.onspeechstart = () => {
@@ -568,7 +574,7 @@ function initMic() {
   recognition.onend = () => {
     isRecording = false;
     micButton.classList.remove("glow");
-    new Audio(ASSETS.recordEnd).play();
+    if (playMicSound) new Audio(ASSETS.recordEnd).play();
     clearTimeout(silenceTimer);
   };
 
@@ -576,7 +582,7 @@ function initMic() {
     console.error("🚫 Speech error:", event.error);
     isRecording = false;
     micButton.classList.remove("glow");
-    new Audio(ASSETS.recordEnd).play();
+    if (playMicSound) new Audio(ASSETS.recordEnd).play();
     clearTimeout(silenceTimer);
   };
 
@@ -602,9 +608,19 @@ function submitMicInput() {
   inputBox.dispatchEvent(event);
 }
 
-
 //end of mic stuff
 
+function toggleFullscreen() {
+  const el = document.documentElement;
+
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
 
 
 document.body.addEventListener("click", () => {
