@@ -447,7 +447,6 @@ const music = new Audio(ASSETS.musicStart);
 const ambiance = new Audio(ASSETS.musicGame);
 music.loop = true;
 ambiance.loop = true;
-const micInput = document.querySelector('#userInput');
 let canvas, ctx, asteroid = null, animationId, asteroidImg = new Image(), gameStarted = false;
 let isPaused = false;
 const pauseSound = new Audio(ASSETS.soundPause);
@@ -468,16 +467,16 @@ let settings = {
   lives: 3,
   livesEnabled: true,
   questionsPerLevel: 3,
-  fallSpeed: 1 // <-- add this line
+  fallSpeed: .5 // <-- add this line
 };
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
-let micPermissionRequested = false;
 let shuffledQuestions = [];
 let shuffledIndex = 0;
 let fallSpeedSliderPercent = 50; // default slider percent (0–100)
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
+
 
 document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
 document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
@@ -504,93 +503,96 @@ userInput.addEventListener("input", () => {
   }
 });
 
-//Mic listener
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
+// Globals
+let recognition = null;
+let isRecording = false;
+let silenceTimer = null;
+let speechDetected = false;
+let micInitialized = false;
 
+// Call this ONCE after DOM is loaded
+function initMic() {
+  const micButton = document.getElementById("micButton");
+  const inputBox = document.getElementById("userInput");
+
+  if (!("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
+    console.warn("❌ Speech recognition not supported.");
+    micButton.style.display = "none";
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
-  recognition.lang = 'en-US';
+  recognition.lang = "en-US";
 
-  let isRecording = false;
-  let readyToRecord = true;
-  let silenceTimer = null;
+  recognition.onstart = () => {
+    isRecording = true;
+    speechDetected = false;
+    micButton.classList.add("glow");
+    new Audio(ASSETS.recordStart).play();
 
-  const micInput = document.querySelector('#userInput');
-  const micButton = document.querySelector('#micButton');
+    // Timeout fallback (4s)
+    silenceTimer = setTimeout(() => {
+      console.warn("⏱️ No speech detected — forcing stop");
+      recognition.abort();
+    }, 4000);
+  };
 
-  micButton.addEventListener('click', () => {
-    if (!readyToRecord || isRecording || recognition.running) return;
+  recognition.onspeechstart = () => {
+    speechDetected = true;
+    console.log("🗣️ Speech started");
+  };
 
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    console.log("🎙️ Transcript:", transcript);
+    if (transcript) {
+      inputBox.value = transcript;
+      submitMicInput();
+    }
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    micButton.classList.remove("glow");
+    new Audio(ASSETS.recordEnd).play();
+    clearTimeout(silenceTimer);
+  };
+
+  recognition.onerror = (event) => {
+    console.error("🚫 Speech error:", event.error);
+    isRecording = false;
+    micButton.classList.remove("glow");
+    new Audio(ASSETS.recordEnd).play();
+    clearTimeout(silenceTimer);
+  };
+
+  micButton.addEventListener("click", () => {
+    if (isRecording) {
+      console.log("⚠️ Already recording — ignoring click");
+      return;
+    }
     try {
-      recognition.abort(); // always abort before restarting
       recognition.start();
-      new Audio(ASSETS.recordStart).play();
-      micButton.classList.add('glow');
-      isRecording = true;
-      readyToRecord = false;
-
-      // ⏱️ 4-second timeout to auto-submit
-      silenceTimer = setTimeout(() => {
-        console.warn("⏱️ Speech timeout - aborting...");
-        recognition.abort();
-        micButton.classList.remove('glow');
-        new Audio(ASSETS.recordEnd).play();
-        isRecording = false;
-        readyToRecord = true;
-
-        // 🚀 Auto-submit the input
-        if (micInput.value.trim()) {
-          const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-          micInput.dispatchEvent(enterEvent);
-        }
-      }, 4000);
     } catch (err) {
-      console.error("🎤 Mic start error:", err);
+      console.error("🎤 Could not start mic:", err);
     }
   });
 
-  // ✅ Handle successful result
-  recognition.onresult = (event) => {
-    clearTimeout(silenceTimer);
-    const transcript = event.results[0][0].transcript.trim();
-    micInput.value = transcript;
-    console.log("🎙️ Voice input:", transcript);
-    micInput.focus();
-    new Audio(ASSETS.recordEnd).play();
-    micButton.classList.remove('glow');
-    isRecording = false;
-    readyToRecord = true;
-
-    // 🚀 Auto-submit the input
-    if (transcript) {
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-      micInput.dispatchEvent(enterEvent);
-    }
-  };
-
-  // 🔊 Logging for debugging
-  recognition.onaudiostart = () => console.log("🎧 Audio started");
-  recognition.onspeechstart = () => console.log("🗣️ Speech detected");
-  recognition.onspeechend = () => console.log("✅ Speech finished");
-  recognition.onaudioend = () => console.log("🔇 Audio ended");
-
-  // ❌ Handle errors and optionally retry
-  recognition.onerror = (event) => {
-    console.error("🚫 Speech error:", event.error);
-    micButton.classList.remove('glow');
-    new Audio(ASSETS.recordEnd).play();
-    isRecording = false;
-    readyToRecord = true;
-    clearTimeout(silenceTimer);
-
-    if (event.error === "no-speech") {
-      console.log("🔁 Retrying due to no speech...");
-      setTimeout(() => recognition.start(), 300);
-    }
-  };
+  micInitialized = true;
 }
+
+// Call this to simulate Enter key for voice submission
+function submitMicInput() {
+  const inputBox = document.getElementById("userInput");
+  const event = new KeyboardEvent("keydown", { key: "Enter" });
+  inputBox.dispatchEvent(event);
+}
+
+
+//end of mic stuff
 
 
 
@@ -612,19 +614,6 @@ function showScreen(screenId) {
     music.pause();
     ambiance.play();
     startAsteroids();
-
-    // ✅ Request mic permission once
-    if (!micPermissionRequested && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      try {
-        const TestRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const test = new TestRecognition();
-        test.onstart = () => test.abort(); // Immediately stop after starting
-        test.start();
-        micPermissionRequested = true;
-      } catch (err) {
-        console.warn("Mic permission error:", err);
-      }
-    }
 
     if (window.innerWidth <= 768) {
       document.getElementById("userInput").style.display = "none";
@@ -670,12 +659,16 @@ function showScreen(screenId) {
 
       if (slider) {
         // Reverse map fallSpeed to slider value
-        const minSpeed = 0.3;
+        const minSpeed = 0.15; // ✅ match here too
         const maxSpeed = 20;
         const curveFactor = 2;
 
-        const percent = Math.pow(Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed), 1 / curveFactor);
+        const percent = Math.pow(
+          Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed),
+          1 / curveFactor
+        );
         const sliderValue = Math.round(percent * 100);
+
 
         slider.value = sliderValue;
 
@@ -716,7 +709,7 @@ function getNextQuestion() {
 }
 
 function adjustedFallSpeed(sliderValue) {
-  const minSpeed = 0.3;
+  const minSpeed = 0.15; // ✅ slower base speed (used to be 0.3)
   const maxSpeed = 20;
   const curveFactor = 2;
 
@@ -731,6 +724,7 @@ function adjustedFallSpeed(sliderValue) {
     display.textContent = curvedSpeed.toFixed(2);
   }
 }
+
 
 
 
@@ -1225,6 +1219,10 @@ function showOverlay({ title, message, titleColor = "red" }, callback) {
 function showCSVHelp() {
   alert("Your CSV file should have two columns, formatted like this:\n\nWhat is 2+2?,4\nCapital of France?,Paris");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  initMic();
+});
 
 
 </script>
