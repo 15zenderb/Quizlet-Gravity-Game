@@ -537,7 +537,7 @@ function initMic() {
     silenceTimer = setTimeout(() => {
       console.warn("⏱️ No speech detected — forcing stop");
       recognition.abort();
-    }, 4000);
+    }, 3000);
   };
 
   recognition.onspeechstart = () => {
@@ -1017,6 +1017,15 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
       document.getElementById("score").innerText = score;
       incorrectSound.play();
     }
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  const isPauseScreenVisible = document.getElementById("pauseScreen")?.style.display === "flex";
+  if (isPauseScreenVisible && e.key === "=") {
+    console.log("🔚 Ending game via '=' key from pause screen.");
+    document.getElementById("pauseScreen").style.display = "none";
+    showGameOver();
   }
 });
 
