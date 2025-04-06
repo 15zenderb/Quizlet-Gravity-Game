@@ -316,6 +316,7 @@
     <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
     <h1 style="margin-bottom: 30px;">Settings</h1>
     <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px;">
+      
       <!-- Lives -->
       <div class="setting-item">
         <span class="setting-label">Lives</span>
@@ -348,9 +349,11 @@
       <div class="setting-item">
         <span class="setting-label">Fall Speed</span>
         <span class="setting-value">
-          <input type="range" min="0" max="100" step="1" value="20" onchange="adjustedFallSpeed(this.value)" style="width: 150px;">
+          <input type="range" min="0" max="100" step="1" value="50" onchange="adjustedFallSpeed(this.value)" style="width: 150px;">
+          <!-- <span id="fallSpeedDisplay" style="margin-left: 10px;">1.00</span> -->
         </span>
       </div>
+
 
       <!-- Volume -->
       <div class="setting-item">
@@ -465,13 +468,14 @@ let settings = {
   lives: 3,
   livesEnabled: true,
   questionsPerLevel: 3,
-  fallSpeed: 1.2 // <-- add this line
+  fallSpeed: 1 // <-- add this line
 };
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
 let micPermissionRequested = false;
 let shuffledQuestions = [];
 let shuffledIndex = 0;
+let fallSpeedSliderPercent = 50; // default slider percent (0–100)
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
 
@@ -500,61 +504,95 @@ userInput.addEventListener("input", () => {
   }
 });
 
-if (micInput && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+//Mic listener
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
+
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
 
-  const micButton = document.querySelector('#micButton');
   let isRecording = false;
   let readyToRecord = true;
   let silenceTimer = null;
 
+  const micInput = document.querySelector('#userInput');
+  const micButton = document.querySelector('#micButton');
+
   micButton.addEventListener('click', () => {
-  if (!readyToRecord || isRecording) return; // Don't prompt again if already recording or not ready
+    if (!readyToRecord || isRecording || recognition.running) return;
 
-  try {
-    recognition.start();
-    new Audio(ASSETS.recordStart).play();
-    micButton.classList.add('glow');
-    isRecording = true;
-    readyToRecord = false;
+    try {
+      recognition.abort(); // always abort before restarting
+      recognition.start();
+      new Audio(ASSETS.recordStart).play();
+      micButton.classList.add('glow');
+      isRecording = true;
+      readyToRecord = false;
 
-    // Safety timer to auto-stop after 2 seconds if nothing happens
-    silenceTimer = setTimeout(() => {
-      if (isRecording) {
+      // ⏱️ 4-second timeout to auto-submit
+      silenceTimer = setTimeout(() => {
+        console.warn("⏱️ Speech timeout - aborting...");
         recognition.abort();
         micButton.classList.remove('glow');
         new Audio(ASSETS.recordEnd).play();
         isRecording = false;
         readyToRecord = true;
-      }
-    }, 2000);
-  } catch (error) {
-    console.error('Mic activation failed:', error);
-  }
-});
 
+        // 🚀 Auto-submit the input
+        if (micInput.value.trim()) {
+          const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
+          micInput.dispatchEvent(enterEvent);
+        }
+      }, 4000);
+    } catch (err) {
+      console.error("🎤 Mic start error:", err);
+    }
+  });
 
+  // ✅ Handle successful result
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
+    clearTimeout(silenceTimer);
+    const transcript = event.results[0][0].transcript.trim();
     micInput.value = transcript;
-    console.log('Voice input:', transcript);
+    console.log("🎙️ Voice input:", transcript);
     micInput.focus();
     new Audio(ASSETS.recordEnd).play();
     micButton.classList.remove('glow');
     isRecording = false;
-    micInput.focus();
     readyToRecord = true;
-    if (silenceTimer) clearTimeout(silenceTimer);
+
+    // 🚀 Auto-submit the input
+    if (transcript) {
+      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
+      micInput.dispatchEvent(enterEvent);
+    }
   };
 
+  // 🔊 Logging for debugging
+  recognition.onaudiostart = () => console.log("🎧 Audio started");
+  recognition.onspeechstart = () => console.log("🗣️ Speech detected");
+  recognition.onspeechend = () => console.log("✅ Speech finished");
+  recognition.onaudioend = () => console.log("🔇 Audio ended");
+
+  // ❌ Handle errors and optionally retry
   recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
+    console.error("🚫 Speech error:", event.error);
+    micButton.classList.remove('glow');
+    new Audio(ASSETS.recordEnd).play();
+    isRecording = false;
+    readyToRecord = true;
+    clearTimeout(silenceTimer);
+
+    if (event.error === "no-speech") {
+      console.log("🔁 Retrying due to no speech...");
+      setTimeout(() => recognition.start(), 300);
+    }
   };
 }
+
+
 
 document.body.addEventListener("click", () => {
   if (music.paused && !gameStarted) {
@@ -592,7 +630,7 @@ function showScreen(screenId) {
       document.getElementById("userInput").style.display = "none";
       document.getElementById("micButton").style.display = "block";
 
-      const slider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       if (!gameStarted && slider && slider.value == "2.5") {
         slider.value = 1.5;
         updateFallSpeed(1.5);
@@ -610,7 +648,7 @@ function showScreen(screenId) {
     document.addEventListener('mousedown', function (event) {
       const inputBox = document.getElementById('userInput');
       const micButton = document.getElementById('micButton');
-      const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="updateFallSpeed"]');
+      const fallSpeedSlider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       if (
         event.target !== inputBox &&
         event.target !== micButton &&
@@ -627,17 +665,28 @@ function showScreen(screenId) {
     music.play();
 
     if (screenId === 'settingsScreen') {
-    const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
-    if (slider) {
-      const minSpeed = 0.3;
-      const maxSpeed = 30;
-      const percent = Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed);
-      slider.value = Math.round(percent * 100);
+      const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
+      const display = document.getElementById("fallSpeedDisplay");
+
+      if (slider) {
+        // Reverse map fallSpeed to slider value
+        const minSpeed = 0.3;
+        const maxSpeed = 20;
+        const curveFactor = 2;
+
+        const percent = Math.pow(Math.log(settings.fallSpeed / minSpeed) / Math.log(maxSpeed / minSpeed), 1 / curveFactor);
+        const sliderValue = Math.round(percent * 100);
+
+        slider.value = sliderValue;
+
+        if (display) {
+          display.textContent = settings.fallSpeed.toFixed(2);
+        }
+      }
     }
   }
-
-  }
 }
+
 
 function getNextShuffledQuestion() {
   if (shuffledIndex >= shuffledQuestions.length || shuffledQuestions.length === 0) {
@@ -667,17 +716,25 @@ function getNextQuestion() {
 }
 
 function adjustedFallSpeed(sliderValue) {
-  // Map slider (0–100) to fall speed using an exponential curve
   const minSpeed = 0.3;
-  const maxSpeed = 30;
-  const percent = sliderValue / 100;
+  const maxSpeed = 20;
+  const curveFactor = 2;
 
-  // Exponential scaling: more precision at low end
-  const curvedSpeed = minSpeed * Math.pow(maxSpeed / minSpeed, percent);
+  const percent = sliderValue / 100;
+  const curvedSpeed = minSpeed * Math.pow(maxSpeed / minSpeed, Math.pow(percent, curveFactor));
 
   settings.fallSpeed = curvedSpeed;
-  fallSpeedMultiplier = curvedSpeed; // immediately apply if needed
+  fallSpeedMultiplier = curvedSpeed;
+
+  const display = document.getElementById("fallSpeedDisplay");
+  if (display) {
+    display.textContent = curvedSpeed.toFixed(2);
+  }
 }
+
+
+
+
 
 
 function updateVolume(value) {
@@ -744,7 +801,7 @@ function showLevelUpMessage(level) {
   document.body.appendChild(levelMsg);
 
   isPaused = true;
-  suppressNextEnter = true;
+  suppressEnterUntil = Date.now() + 1500;;
 
   // Trigger animation by forcing reflow and adding a class
   void levelMsg.offsetWidth;
@@ -928,15 +985,14 @@ function nextQuestion() {
   asteroid = createAsteroid(questionObj);
 }
 
-
-
 document.getElementById("userInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
-    if (suppressNextEnter) {
-      suppressNextEnter = false; // ✅ skip processing, consume the flag
-      this.value = ""; // optionally clear input if needed
+    const now = Date.now();
+    if (now < suppressEnterUntil) {
+      this.value = "";
       return;
     }
+
     const input = this.value.trim().toLowerCase();
     const expected = asteroid.answer?.toLowerCase();
 
@@ -1110,7 +1166,7 @@ function skipQuestion() {
 
 
 function showOverlay({ title, message, titleColor = "red" }, callback) {
-  suppressNextEnter = true; // 🚫 block next Enter key
+  suppressEnterUntil = Date.now() + 1500;; // 🚫 block next Enter key
 
   const overlay = document.createElement("div");
   overlay.id = "lifeLostOverlay";
@@ -1169,22 +1225,6 @@ function showOverlay({ title, message, titleColor = "red" }, callback) {
 function showCSVHelp() {
   alert("Your CSV file should have two columns, formatted like this:\n\nWhat is 2+2?,4\nCapital of France?,Paris");
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Ask for mic permission once when the page loads
-  if (!micPermissionRequested && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    try {
-      const TestRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const test = new TestRecognition();
-      test.onstart = () => test.abort(); // immediately stop
-      test.start();
-      micPermissionRequested = true;
-      console.log("🎤 Microphone permission requested on load.");
-    } catch (err) {
-      console.warn("Mic permission error:", err);
-    }
-  }
-});
 
 
 </script>
