@@ -146,6 +146,7 @@
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+        
       }
     
       .setting-item {
@@ -153,10 +154,11 @@
         justify-content: space-between;
         width: 100%;
         background: rgba(0, 0, 0, 0.3);
-        padding: 15px 20px;
+        padding: 20px;
         border-radius: 12px;
         font-size: 4vw;
         font-family: 'Courier New', monospace;
+       margin: 0 auto;
       }
     
       .setting-label,
@@ -418,15 +420,8 @@
             margin-right: 6px;
           ">Upload CSV</label>
           <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)" style="display: none;">
-          <button onclick="showCSVHelp()" style="
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-          ">Help</button>
+          <button onclick="showCSVHelp()" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; background-color: #333; color: white; border: none; cursor: pointer;">Help</button>
+          <button onclick="showQuestionData()" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; background-color: #333; color: white; border: none; cursor: pointer;">View Questions</button>
         </span>
       </div>
 
@@ -493,11 +488,22 @@ let isPaused = false;
 const pauseSound = new Audio(ASSETS.soundPause);
 const unpauseSound = new Audio(ASSETS.soundUnpause);
 asteroidImg.src = ASSETS.asteroid;
-let quizData = [
-  { question: "a", answer: "one" },
-  { question: "b", answer: "two" },
-  { question: "c", answer: "three" },
-];
+let quizData = [];
+try {
+  const saved = localStorage.getItem("quizData");
+  quizData = saved ? JSON.parse(saved) : [
+    { question: "a", answer: "one" },
+    { question: "b", answer: "two" },
+    { question: "c", answer: "three" }
+  ];
+} catch (e) {
+  console.error("Failed to load quiz data from localStorage:", e);
+  quizData = [
+    { question: "a", answer: "one" },
+    { question: "b", answer: "two" },
+    { question: "c", answer: "three" }
+  ];
+}
 let score = 0;
 let lives = 3;
 let missedAnswers = [];
@@ -654,18 +660,6 @@ function toggleFullscreen() {
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
   }
 }
-
-userInput.addEventListener("focus", () => {
-  if (window.innerWidth <= 768) {
-    userInput.style.bottom = "120px";
-    if (hud) hud.style.bottom = "120px";
-  }
-});
-
-userInput.addEventListener("blur", () => {
-  userInput.style.bottom = "10px";
-  if (hud) hud.style.bottom = "10px";
-});
 
 
 document.body.addEventListener("click", () => {
@@ -1029,6 +1023,7 @@ function handleCSVUpload(event) {
 
     if (data.length > 0) {
       quizData = data;
+      localStorage.setItem("quizData", JSON.stringify(data));
       currentIndex = 0;
       console.log("✅ Imported CSV questions:", quizData);
 
@@ -1307,7 +1302,77 @@ function showCSVHelp() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initMic();
+
+  // 🧠 Mobile keyboard fix using VisualViewport
+  if ("visualViewport" in window) {
+    const repositionInput = () => {
+      const input = document.getElementById("userInput");
+      const hud = document.getElementById("hud");
+      const bottomOffset = window.visualViewport.height + window.visualViewport.offsetTop - window.innerHeight;
+
+      if (input) {
+        if (bottomOffset > 0) {
+          input.style.bottom = `${bottomOffset + 10}px`;
+          if (hud) hud.style.bottom = `${bottomOffset + 10}px`;
+        } else {
+          input.style.bottom = "10px";
+          if (hud) hud.style.bottom = "10px";
+        }
+      }
+    };
+
+    window.visualViewport.addEventListener("resize", repositionInput);
+    window.visualViewport.addEventListener("scroll", repositionInput);
+  }
 });
+
+
+function showQuestionData() {
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100vw";
+  overlay.style.height = "100vh";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
+  overlay.style.zIndex = "9999";
+  overlay.style.overflowY = "auto";
+  overlay.style.padding = "20px";
+  overlay.style.boxSizing = "border-box";
+  overlay.style.color = "white";
+  overlay.style.fontFamily = "'Courier New', monospace";
+
+  const title = document.createElement("h2");
+  title.textContent = "Current Question Bank";
+  title.style.fontSize = "28px";
+  title.style.marginBottom = "20px";
+
+  const close = document.createElement("div");
+  close.textContent = "✖ Close";
+  close.style.cursor = "pointer";
+  close.style.marginBottom = "20px";
+  close.style.color = "red";
+  close.style.fontSize = "18px";
+  close.onclick = () => document.body.removeChild(overlay);
+
+  overlay.appendChild(close);
+  overlay.appendChild(title);
+
+  if (quizData.length === 0) {
+    const empty = document.createElement("div");
+    empty.textContent = "No questions loaded.";
+    overlay.appendChild(empty);
+  } else {
+    quizData.forEach((q, i) => {
+      const item = document.createElement("div");
+      item.textContent = `${i + 1}. Q: ${q.question} → A: ${q.answer}`;
+      item.style.marginBottom = "8px";
+      overlay.appendChild(item);
+    });
+  }
+
+  document.body.appendChild(overlay);
+}
 
 
 </script>
