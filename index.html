@@ -200,6 +200,21 @@
         background-color: rgba(71, 71, 66, 0.63);
         color: rgb(255, 255, 255);
       }
+
+      .setting-value span#ttsEnabledSetting {
+      display: inline-block;
+      min-width: 80px;
+      text-align: center;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+
+    .setting-value span#ttsEnabledSetting:hover {
+      background-color: rgba(71, 71, 66, 0.63);
+      color: rgb(255, 255, 255);
+    }
     
       #csvStatus {
         margin-top: 8px;
@@ -236,7 +251,12 @@
         transition: opacity 0.5s ease, transform 0.5s ease;
         pointer-events: none;
         box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+        
+        max-width: 80vw;            /* ✅ Prevent overflow */
+        text-align: center;         /* ✅ Center the text */
+        word-break: break-word;     /* ✅ Wrap long text */
       }
+
     
       .level-up-message.show {
         opacity: 1;
@@ -283,9 +303,10 @@
   }
 
   .setting-item {
-    width: 100%;
+    width: 90%;
     max-width: 600px;
     margin: 0 auto;
+    padding: 15px 20px; 
   }
 
   #asteroidCanvas {
@@ -397,6 +418,15 @@
     font-size: 24px;
     padding: 15px 20px; /* reset padding to standard */
   }
+
+  #mobileMenuOptions {
+  display: none;
+}
+
+#mobileMenuToggle {
+  display: none;
+}
+  
 }
     </style>   
     
@@ -493,6 +523,14 @@
           <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
         </span>
       </div>
+
+      <div class="setting-item">
+        <span class="setting-label">Text to Speech</span>
+        <span class="setting-value">
+          <span id="ttsEnabledSetting" onclick="toggleSetting('ttsEnabled')">No</span>
+        </span>
+      </div>
+      
 
       <!-- Upload CSV -->
       <div class="setting-item">
@@ -603,7 +641,8 @@ let settings = {
   lives: 3,
   livesEnabled: true,
   questionsPerLevel: 3,
-  fallSpeed: .5 // <-- add this line
+  fallSpeed: .5,
+  ttsEnabled: false
 };
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
@@ -1136,6 +1175,13 @@ function handleCSVUpload(event) {
 function nextQuestion() {
   const questionObj = getNextShuffledQuestion();
   asteroid = createAsteroid(questionObj);
+
+  if (settings.ttsEnabled && 'speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(asteroid.question);
+    utterance.lang = 'en-US';
+    speechSynthesis.cancel(); // Stop any previous speech
+    speechSynthesis.speak(utterance);
+  }
 }
 
 document.getElementById("userInput").addEventListener("keydown", function (e) {
@@ -1294,7 +1340,6 @@ function changeSetting(key, delta) {
 function toggleSetting(key) {
   if (key === 'livesEnabled') {
     settings.livesEnabled = !settings.livesEnabled;
-
     const label = document.getElementById("livesEnabledSetting");
     const livesText = document.getElementById("livesSetting");
     const minusBtn = document.getElementById("livesMinus");
@@ -1304,8 +1349,12 @@ function toggleSetting(key) {
     livesText.innerText = settings.livesEnabled ? settings.lives : "Infinity";
     minusBtn.disabled = !settings.livesEnabled;
     plusBtn.disabled = !settings.livesEnabled;
+  } else if (key === 'ttsEnabled') {
+    settings.ttsEnabled = !settings.ttsEnabled;
+    document.getElementById("ttsEnabledSetting").innerText = settings.ttsEnabled ? "Yes" : "No";
   }
 }
+
 
 function skipQuestion() {
   incorrectSound.play();
