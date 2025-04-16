@@ -260,8 +260,8 @@
       }
     
       /* MOBILE STYLES (already working well) */
-@media (max-width: 768px) {
-  /* Start screen menu buttons */
+      @media (max-width: 768px) {
+  /* Menu styling */
   #menuScreen .menu-option {
     background-color: rgba(255, 255, 255, 0.1);
     padding: 12px 20px;
@@ -274,31 +274,112 @@
     background-color: rgba(255, 255, 255, 0.25);
   }
 
-  /* Settings menu mobile padding */
+  /* Settings layout */
   #settingsScreen > div {
-    padding: 0 50px; /* Add horizontal padding */
+    padding: 0 50px;
     box-sizing: border-box;
-    width: 100%; /* Full width container */
-    max-width: 100%; /* Prevent stretching beyond screen */
+    width: 100%;
+    max-width: 100%;
   }
 
   .setting-item {
     width: 100%;
-    max-width: 600px; /* Limit width of each item */
-    margin: 0 auto; /* Center the item */
+    max-width: 600px;
+    margin: 0 auto;
   }
 
   #asteroidCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  z-index: 0;
-  touch-action: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 0;
+    touch-action: none;
   }
-  
+
+  /* 🔼 Input at top */
+  #userInput {
+  position: absolute;
+  top: 10px;
+  right: calc(100vw - (50% + 40vw + 10px + 20px)); /* mic left edge - 10px gap */
+  width: 40vw;
+  max-width: 400px;
+  height: 40px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  z-index: 12;
+  background-color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  box-sizing: border-box;
 }
+
+
+
+/* 🎙 Mic button */
+#micButton {
+  position: absolute;
+  top: 10px;
+  left: calc(50vw + 35vw + 10px); /* centered + half of 70vw + 10px gap */
+  transform: translateX(-50%);
+  height: 40px;
+  width: 40px;
+  background: url('https://img.icons8.com/ios-filled/50/000000/microphone.png') no-repeat center center;
+  background-size: 60%;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 12;
+}
+
+
+  /* Move HUD down to avoid overlapping input */
+  #hud {
+    position: absolute;
+    top: 70px;
+    left: 10px;
+    font-size: 18px;
+    bottom: auto;
+  }
+
+  /* Hide default buttons */
+.game-buttons {
+  display: none;
+}
+
+/* Menu toggle button */
+#mobileMenuToggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 28px;
+  z-index: 13;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+/* Dropdown options */
+#mobileMenuOptions {
+  display: none;
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 13;
+  flex-direction: column;
+  gap: 10px;
+}
+
+}
+
+
 
 /* DESKTOP RESET */
 @media (min-width: 769px) {
@@ -331,27 +412,35 @@
   </div>
 
   <!-- Game Screen -->
-  <div id="gameScreen" class="screen game">
-    <!-- HUD -->
-    <div id="hud">
-      <div>Score: <span id="score">0</span></div>
-      <div>Lives: <span id="lives">3</span></div>
-      <div>Level: <span id="level">1</span></div>
-    </div>
-
-    <!-- Control Buttons -->
-    <div class="game-buttons">
-      <div class="gamescreen-button" onclick="showScreen('menuScreen')">Main Menu</div>
-      <div class="gamescreen-button" onclick="pauseGame()">Pause</div>
-      <div class="gamescreen-button" onclick="skipQuestion()">Skip Question</div>
-    </div>
-
-    <!-- Canvas & Input -->
-    <canvas id="asteroidCanvas"></canvas>
-    <input id="userInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-      placeholder="" />
-    <button id="micButton"></button>
+<div id="gameScreen" class="screen game">
+  
+  <!-- HUD -->
+  <div id="hud">
+    <div>Score: <span id="score">0</span></div>
+    <div>Lives: <span id="lives">3</span></div>
+    <div>Level: <span id="level">1</span></div>
   </div>
+
+  <!-- ✅ Mobile Dropdown Menu (Only visible via CSS on mobile) -->
+  <div id="mobileMenuToggle" class="dropdown-toggle" onclick="toggleMobileMenu()">☰</div>
+  <div id="mobileMenuOptions" class="dropdown-options">
+    <div class="gamescreen-button" onclick="showScreen('menuScreen')">Main Menu</div>
+    <div class="gamescreen-button" onclick="pauseGame()">Pause</div>
+    <div class="gamescreen-button" onclick="skipQuestion()">Skip Question</div>
+  </div>
+
+  <!-- Desktop Buttons (hidden via CSS on mobile) -->
+  <div class="game-buttons">
+    <div class="gamescreen-button" onclick="showScreen('menuScreen')">Main Menu</div>
+    <div class="gamescreen-button" onclick="pauseGame()">Pause</div>
+    <div class="gamescreen-button" onclick="skipQuestion()">Skip Question</div>
+  </div>
+
+  <!-- Canvas & Input -->
+  <canvas id="asteroidCanvas"></canvas>
+  <input id="userInput" ... />
+  <button id="micButton"></button>
+</div>
 
   <!-- Settings Screen -->
   <div id="settingsScreen" class="screen settings">
@@ -951,15 +1040,14 @@ function updateAsteroids() {
   const textBox = document.getElementById("userInput");
   const canvasRect = canvas.getBoundingClientRect();
 
-  const collisionY = textBox && textBox.offsetParent !== null
-    ? textBox.getBoundingClientRect().top - canvasRect.top
-    : canvas.height - 80; // fallback bottom zone on mobile
+  const collisionY = canvas.height; // Always detect collision at bottom of canvas
+
 
   const asteroidBottom = asteroid.y + asteroid.size;
 
   if (
-    asteroidBottom >= collisionY &&
-    document.getElementById("gameScreen").style.display === "flex"
+  asteroidBottom >= collisionY &&
+  document.getElementById("gameScreen").style.display === "flex"
   ) {
     new Audio(ASSETS.explosion).play();
     lives--;
@@ -1302,28 +1390,6 @@ function showCSVHelp() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initMic();
-
-  // 🧠 Mobile keyboard fix using VisualViewport
-  if ("visualViewport" in window) {
-    const repositionInput = () => {
-      const input = document.getElementById("userInput");
-      const hud = document.getElementById("hud");
-      const bottomOffset = window.visualViewport.height + window.visualViewport.offsetTop - window.innerHeight;
-
-      if (input) {
-        if (bottomOffset > 0) {
-          input.style.bottom = `${bottomOffset + 10}px`;
-          if (hud) hud.style.bottom = `${bottomOffset + 10}px`;
-        } else {
-          input.style.bottom = "10px";
-          if (hud) hud.style.bottom = "10px";
-        }
-      }
-    };
-
-    window.visualViewport.addEventListener("resize", repositionInput);
-    window.visualViewport.addEventListener("scroll", repositionInput);
-  }
 });
 
 
@@ -1372,6 +1438,11 @@ function showQuestionData() {
   }
 
   document.body.appendChild(overlay);
+}
+
+function toggleMobileMenu() {
+  const menu = document.getElementById("mobileMenuOptions");
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
 
 
