@@ -474,10 +474,10 @@
 
   <!-- Settings Screen -->
   <div id="settingsScreen" class="screen settings">
-    <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
     <h1 style="margin-bottom: 30px;">Settings</h1>
-    <div style="display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; max-width: 800px; padding-left: 10px; padding-right: 10px;">
-      
+    <div class="main-menu" onclick="showScreen('menuScreen')">Main Menu</div>
+    <div style="transform: scale(0.8); transform-origin: top center; width: 100%; display: flex; flex-direction: column; gap: 25px; align-items: center; max-width: 800px; padding: 0 10px;">
+
       <!-- Lives -->
       <div class="setting-item">
         <span class="setting-label">Lives</span>
@@ -523,14 +523,26 @@
           <input type="range" min="0" max="1" step="0.01" value="1" onchange="updateVolume(this.value)" style="width: 150px;">
         </span>
       </div>
-
+      
+      <!-- TTS Enabled -->
       <div class="setting-item">
         <span class="setting-label">Text to Speech</span>
         <span class="setting-value">
           <span id="ttsEnabledSetting" onclick="toggleSetting('ttsEnabled')">No</span>
         </span>
       </div>
-      
+
+      <!-- TTS Language -->
+      <div class="setting-item">
+        <span class="setting-label">TTS Language</span>
+        <span class="setting-value">
+          <select id="ttsLanguageSelector" onchange="updateTTSLanguage(this.value)">
+            <option value="en-US">English (US)</option>
+            <option value="fil-PH">Tagalog (Filipino)</option>
+            <option value="es-ES">Spanish</option>
+          </select>
+        </span>
+      </div>
 
       <!-- Upload CSV -->
       <div class="setting-item">
@@ -642,16 +654,23 @@ let settings = {
   livesEnabled: true,
   questionsPerLevel: 3,
   fallSpeed: .5,
-  ttsEnabled: false
+  ttsEnabled: false,
+  ttsLanguage: 'en-US'
 };
+
 let suppressNextEnter = false;
 let suppressEnterUntil = 0; 
 let shuffledQuestions = [];
 let shuffledIndex = 0;
 let fallSpeedSliderPercent = 50; // default slider percent (0–100)
+let gameInputFocusHandler = null;
+
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
-
+const savedLang = localStorage.getItem("ttsLanguage");
+if (savedLang) {
+  settings.ttsLanguage = savedLang;
+}
 
 document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
 document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
@@ -796,10 +815,18 @@ document.body.addEventListener("click", () => {
   }
 });
 
+
 function showScreen(screenId) {
+  // Hide all screens
   document.querySelectorAll('.screen').forEach(screen => {
     screen.style.display = 'none';
   });
+
+  // Show canvas only during game
+  const canvas = document.getElementById("asteroidCanvas");
+  if (canvas) canvas.style.display = (screenId === "gameScreen") ? "block" : "none";
+
+  // Show selected screen
   document.getElementById(screenId).style.display = 'flex';
 
   // Lock scroll on mobile for game screen
@@ -814,23 +841,20 @@ function showScreen(screenId) {
     ambiance.play();
     startAsteroids();
 
-    // Hide keyboard input on mobile, show mic
+    // Show input & mic
+    const inputBox = document.getElementById("userInput");
+    const micButton = document.getElementById("micButton");
+    inputBox.style.display = "block";
+    micButton.style.display = "block";
+
     if (window.innerWidth <= 768) {
-      document.getElementById("userInput").style.display = "block";
-      document.getElementById("userInput").blur(); // Don't auto-focus
-      document.getElementById("micButton").style.display = "block";
+      inputBox.blur(); // Don't auto-focus on mobile
     } else {
-      document.getElementById("userInput").style.display = "block";
-      document.getElementById("micButton").style.display = "block";
-      const inputBox = document.getElementById('userInput');
-      if (inputBox) {
-        inputBox.focus();
-      }
+      inputBox.focus();
     }
 
-    document.addEventListener('mousedown', function (event) {
-      const inputBox = document.getElementById('userInput');
-      const micButton = document.getElementById('micButton');
+    // Bind focus click handler (only once)
+    gameInputFocusHandler = function (event) {
       if (
         event.target !== inputBox &&
         event.target !== micButton &&
@@ -839,15 +863,27 @@ function showScreen(screenId) {
         event.preventDefault();
         if (window.innerWidth > 768) inputBox.focus();
       }
-    }, true);
+    };
+    document.addEventListener('mousedown', gameInputFocusHandler, true);
 
   } else {
-    gameStarted = false;
+    // Exiting game screen
     isPaused = true;
+    gameStarted = false;
     ambiance.pause();
     music.play();
 
-    // Reset slider position when entering settings
+    // Hide input & mic
+    document.getElementById("userInput").style.display = "none";
+    document.getElementById("micButton").style.display = "none";
+
+    // Remove focus click handler if it exists
+    if (gameInputFocusHandler) {
+      document.removeEventListener('mousedown', gameInputFocusHandler, true);
+      gameInputFocusHandler = null;
+    }
+
+    // Update fall speed slider in settings
     if (screenId === 'settingsScreen') {
       const slider = document.querySelector('input[type="range"][onchange*="adjustedFallSpeed"]');
       const display = document.getElementById("fallSpeedDisplay");
@@ -868,9 +904,13 @@ function showScreen(screenId) {
           display.textContent = settings.fallSpeed.toFixed(2);
         }
       }
+
+      // Restore TTS language dropdown selection
+      document.getElementById("ttsLanguageSelector").value = settings.ttsLanguage;
     }
   }
 }
+
 
 
 
@@ -1176,12 +1216,22 @@ function nextQuestion() {
   const questionObj = getNextShuffledQuestion();
   asteroid = createAsteroid(questionObj);
 
-  if (settings.ttsEnabled && 'speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(asteroid.question);
-    utterance.lang = 'en-US';
-    speechSynthesis.cancel(); // Stop any previous speech
-    speechSynthesis.speak(utterance);
-  }
+  if (settings.ttsEnabled) {
+  const langMap = {
+    'en-US': 'en',
+    'fil-PH': 'tl',
+    'es-ES': 'es' // ✅ Add Spanish mapping
+  };
+  const lang = langMap[settings.ttsLanguage] || 'en';
+  const text = encodeURIComponent(asteroid.question);
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${text}&tl=${lang}&client=tw-ob`;
+
+  const audio = new Audio(url);
+  audio.play().catch(err => {
+    console.warn("🔇 TTS audio play blocked or failed:", err);
+  });
+}
+
 }
 
 document.getElementById("userInput").addEventListener("keydown", function (e) {
@@ -1488,6 +1538,12 @@ function showQuestionData() {
 
   document.body.appendChild(overlay);
 }
+
+function updateTTSLanguage(lang) {
+  settings.ttsLanguage = lang;
+  localStorage.setItem("ttsLanguage", lang);
+}
+
 
 function toggleMobileMenu() {
   const menu = document.getElementById("mobileMenuOptions");
