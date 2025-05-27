@@ -1224,7 +1224,7 @@ function nextQuestion() {
   };
   const lang = langMap[settings.ttsLanguage] || 'en';
   const text = encodeURIComponent(asteroid.question);
-  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${text}&tl=${lang}&client=tw-ob`;
+  const url = `https://googlettsworkaround.15zenderb.workers.dev/?text=${encodeURIComponent(text)}&lang=${lang}`;
 
   const audio = new Audio(url);
   audio.play().catch(err => {
