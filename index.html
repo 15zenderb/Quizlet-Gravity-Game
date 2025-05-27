@@ -670,10 +670,21 @@ let questionAnswered = false;
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
 const savedLang = localStorage.getItem("ttsLanguage");
+
 if (savedLang) {
   settings.ttsLanguage = savedLang;
 }
 
+let ambianceUnlocked = false;
+
+document.body.addEventListener("click", () => {
+  if (!ambianceUnlocked) {
+    ambiance.play().then(() => {
+      ambiance.pause(); // unlock, but pause immediately
+      ambianceUnlocked = true;
+    }).catch(() => {});
+  }
+});
 document.documentElement.style.setProperty('--menu-bg', `url('${ASSETS.menuBackground}') no-repeat center center/cover`);
 document.documentElement.style.setProperty('--game-bg', `url('${ASSETS.gameBackground}') no-repeat center center/cover`);
 document.documentElement.style.setProperty('--pause-bg', `url('${ASSETS.pauseBackground}') no-repeat center center/cover`);
@@ -840,7 +851,14 @@ function showScreen(screenId) {
     isPaused = false;
     gameStarted = true;
     music.pause();
-    ambiance.play();
+
+    // ✅ Only play ambiance if unlocked and not already playing
+    if (ambianceUnlocked && ambiance.paused) {
+      ambiance.play().catch(err => {
+        console.warn("🔇 Ambiance playback blocked:", err);
+      });
+    }
+
     startAsteroids();
 
     // Show input & mic
@@ -872,7 +890,13 @@ function showScreen(screenId) {
     // Exiting game screen
     isPaused = true;
     gameStarted = false;
-    ambiance.pause();
+
+    // ✅ Stop ambiance if not in game screen
+    if (!ambiance.paused) {
+      ambiance.pause();
+      ambiance.currentTime = 0;
+    }
+
     music.play();
 
     // Hide input & mic
@@ -912,6 +936,7 @@ function showScreen(screenId) {
     }
   }
 }
+
 
 
 
@@ -1264,15 +1289,27 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
     if (input === expected) {
       questionAnswered = true;
 
+      // Stop TTS if it's playing
       if (window.currentTTS) {
-        window.currentTTS.pause?.();
+        try {
+          window.currentTTS.pause?.();
+          window.currentTTS.currentTime = 0;
+        } catch (e) {}
         window.currentTTS = null;
+      }
+
+      try {
+        correctSound.currentTime = 0;
+        correctSound.play().catch(err => {
+          console.warn("🔇 Correct sound failed:", err);
+        });
+      } catch (e) {
+        console.warn("🔇 correctSound error:", e);
       }
 
       score++;
       totalCorrect++;
       document.getElementById("score").innerText = score;
-      correctSound.play();
       this.value = "";
 
       if (
@@ -1291,17 +1328,30 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
     } else {
       questionAnswered = true;
 
+      // Cancel TTS before playing incorrectSound
       if (window.currentTTS) {
-        window.currentTTS.pause?.();
+        try {
+          window.currentTTS.pause?.();
+          window.currentTTS.currentTime = 0;
+        } catch (e) {}
         window.currentTTS = null;
+      }
+
+      try {
+        incorrectSound.currentTime = 0;
+        incorrectSound.play().catch(err => {
+          console.warn("🔇 Incorrect sound failed:", err);
+        });
+      } catch (e) {
+        console.warn("🔇 incorrectSound error:", e);
       }
 
       score--;
       document.getElementById("score").innerText = score;
-      incorrectSound.play();
     }
   }
 });
+
 
 
 
