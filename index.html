@@ -607,6 +607,15 @@
   recordEnd: "https://github.com/15zenderb/Quizlet-Gravity-Game/blob/main/assets/sounds/record_end.mp3?raw=true"
 };
 
+const cacheBuster = Date.now();
+
+for (const key in ASSETS) {
+  if (ASSETS[key].includes("?")) {
+    ASSETS[key] += `&cb=${cacheBuster}`;
+  } else {
+    ASSETS[key] += `?cb=${cacheBuster}`;
+  }
+}
 
 // Preload large background images
 const preloadMenuBg = new Image();
