@@ -664,6 +664,8 @@ let shuffledQuestions = [];
 let shuffledIndex = 0;
 let fallSpeedSliderPercent = 50; // default slider percent (0–100)
 let gameInputFocusHandler = null;
+let questionAnswered = false;
+
 
 const correctSound = new Audio(ASSETS.correct);
 const incorrectSound = new Audio(ASSETS.incorrect);
@@ -1215,24 +1217,38 @@ function handleCSVUpload(event) {
 function nextQuestion() {
   const questionObj = getNextShuffledQuestion();
   asteroid = createAsteroid(questionObj);
+  questionAnswered = false;
+
+  if (window.currentTTS) {
+    window.currentTTS.pause?.();
+    window.currentTTS = null;
+  }
 
   if (settings.ttsEnabled) {
-  const langMap = {
-    'en-US': 'en',
-    'fil-PH': 'tl',
-    'es-ES': 'es' // ✅ Add Spanish mapping
-  };
-  const lang = langMap[settings.ttsLanguage] || 'en';
-  const text = encodeURIComponent(asteroid.question);
-  const url = `https://googlettsworkaround.15zenderb.workers.dev/?text=${encodeURIComponent(text)}&lang=${lang}`;
+    setTimeout(() => {
+      // Only speak if the question wasn't answered yet
+      if (questionAnswered) return;
 
-  const audio = new Audio(url);
-  audio.play().catch(err => {
-    console.warn("🔇 TTS audio play blocked or failed:", err);
-  });
+      const langMap = {
+        'en-US': 'en',
+        'fil-PH': 'tl',
+        'es-ES': 'es'
+      };
+      const lang = langMap[settings.ttsLanguage] || 'en';
+      const text = asteroid.question;
+      const url = `https://googlettsworkaround.15zenderb.workers.dev/?text=${encodeURIComponent(text)}&lang=${lang}`;
+
+      const audio = new Audio(url);
+      audio.play().catch(err => {
+        console.warn("🔇 TTS audio failed:", err);
+      });
+
+      window.currentTTS = audio;
+    }, 500); // or longer if needed
+  }
 }
 
-}
+
 
 document.getElementById("userInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
@@ -1246,19 +1262,25 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
     const expected = asteroid.answer?.toLowerCase();
 
     if (input === expected) {
+      questionAnswered = true;
+
+      if (window.currentTTS) {
+        window.currentTTS.pause?.();
+        window.currentTTS = null;
+      }
+
       score++;
       totalCorrect++;
       document.getElementById("score").innerText = score;
       correctSound.play();
       this.value = "";
 
-      // ✅ Level up based on total correct answers
       if (
         settings.questionsPerLevel > 0 &&
         totalCorrect % settings.questionsPerLevel === 0
       ) {
         level++;
-        fallSpeedMultiplier += 0.5; // subtle increase
+        fallSpeedMultiplier += 0.5;
         document.getElementById("level").innerText = level;
         showLevelUpMessage(level);
       }
@@ -1267,7 +1289,13 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
       nextQuestion();
 
     } else {
-      // ❌ Wrong answer
+      questionAnswered = true;
+
+      if (window.currentTTS) {
+        window.currentTTS.pause?.();
+        window.currentTTS = null;
+      }
+
       score--;
       document.getElementById("score").innerText = score;
       incorrectSound.play();
@@ -1275,14 +1303,6 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
   }
 });
 
-document.addEventListener("keydown", (e) => {
-  const isPauseScreenVisible = document.getElementById("pauseScreen")?.style.display === "flex";
-  if (isPauseScreenVisible && e.key === "=") {
-    console.log("🔚 Ending game via '=' key from pause screen.");
-    document.getElementById("pauseScreen").style.display = "none";
-    showGameOver();
-  }
-});
 
 
 function showGameOver() {
@@ -1405,8 +1425,14 @@ function toggleSetting(key) {
   }
 }
 
-
 function skipQuestion() {
+  questionAnswered = true;
+
+  if (window.currentTTS) {
+    window.currentTTS.pause?.();
+    window.currentTTS = null;
+  }
+
   incorrectSound.play();
   score -= 1;
   document.getElementById("score").innerText = score;
@@ -1424,6 +1450,7 @@ function skipQuestion() {
     }
   );
 }
+
 
 
 function showOverlay({ title, message, titleColor = "red" }, callback) {
