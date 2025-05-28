@@ -1132,12 +1132,21 @@ function showLevelUpMessage(level) {
 function createAsteroid(q) {
   const isMobile = window.innerWidth <= 768;
   const baseSize = isMobile ? 200 : 400;
-  const centerOffset = canvas.width / 2 - baseSize / 2;
+
+  const ctx = document.getElementById("asteroidCanvas").getContext("2d");
+  ctx.font = "16px Courier New"; // Match canvas text style
+  const textWidth = ctx.measureText(q.question).width;
+
+  const padding = 20;
+  const maxX = canvas.width - Math.max(baseSize, textWidth) - padding;
+  const minX = padding;
+  const xPos = Math.random() * (maxX - minX) + minX;
+
   const direction = Math.random() < 0.5 ? -1 : 1;
   const rotationSpeed = direction * (Math.random() * 0.000000001 - 0.01);
 
   return {
-    x: centerOffset + (Math.random() * 200 - 25),
+    x: xPos,
     y: -50,
     size: baseSize,
     speed: 0.5 * fallSpeedMultiplier,
@@ -1148,6 +1157,7 @@ function createAsteroid(q) {
     raw: q
   };
 }
+
 
 
 
