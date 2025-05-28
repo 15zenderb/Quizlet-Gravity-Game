@@ -15,7 +15,29 @@
         background-color: black;
         color: white;
       }
-    
+      
+      select {
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #1e1e1e;
+        color: white;
+        font-family: inherit;
+        font-size: 20px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px 16px;
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: #4CAF50;
+      }
       .screen {
         position: absolute;
         width: 100vw;
@@ -279,6 +301,50 @@
           box-shadow: 0 0 6px #ff4d4d;
         }
       }
+
+      .user-options {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 15px;
+      }
+
+      .welcome-user {
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #fff;
+      }
+
+      .styled-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-family: inherit;
+        color: white;
+        background-color: #4CAF50; /* default green */
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+
+      .styled-button:hover {
+        transform: scale(1.05);
+      }
+
+      .styled-button:active {
+        transform: scale(0.98);
+      }
+
+      .styled-button.danger {
+        background-color: #f44336;
+      }
+
+      .styled-button.warning {
+        background-color: #FF9800;
+      }
+
     
       /* MOBILE STYLES (already working well) */
       @media (max-width: 768px) {
@@ -454,20 +520,17 @@
       <p id="authMessage" style="color: #f44336; margin-top: 5px;"></p>
     </div>
 
-    <!--Login info -->
-  <div id="userOptions" style="display: none; flex-direction: column; align-items: center; margin-top: 15px;">
-    <p id="welcomeUser" style="font-weight: bold; margin-bottom: 10px;"></p>
+<div id="userOptions" class="user-options">
+  <p id="welcomeUser" class="welcome-user"></p>
 
-    <button id="logoutButton" onclick="logout()" style="padding: 10px 20px; border: none; border-radius: 5px; background: #f44336; color: white; margin-bottom: 10px;">
-      🔒 Logout
-    </button>
+  <button id="logoutButton" onclick="logout()" class="styled-button danger">
+    🔒 Logout
+  </button>
 
-    <button onclick="showQuestionBankScreen()" style="padding: 10px 20px; border: none; border-radius: 5px; background: #FF9800; color: white; margin-bottom: 10px;">
-      📚 Manage Question Banks
-    </button>
-
-    
-  </div>
+  <button onclick="showQuestionBankScreen()" class="styled-button warning">
+    📚 Manage Question Banks
+  </button>
+</div>
 
 </div>
 
@@ -571,6 +634,18 @@
           <select id="ttsLanguageSelector" onchange="updateTTSLanguage(this.value)">
             <option value="en-US">English (US)</option>
             <option value="fil-PH">Tagalog (Filipino)</option>
+            <option value="es-ES">Spanish</option>
+          </select>
+        </span>
+      </div>
+
+      <!-- Voice Input Language -->
+      <div class="setting-item">
+        <span class="setting-label">Voice Input Language</span>
+        <span class="setting-value">
+          <select id="voiceInputLanguageSelector" onchange="updateVoiceInputLanguage(this.value)">
+            <option value="en-US">English (US)</option>
+            <option value="fil-PH">Filipino</option>
             <option value="es-ES">Spanish</option>
           </select>
         </span>
@@ -745,6 +820,10 @@ if (savedLang) {
   settings.ttsLanguage = savedLang;
 }
 
+if (!settings.voiceInputLanguage) {
+  settings.voiceInputLanguage = "en-US";
+}
+
 let ambianceUnlocked = false;
 
 document.body.addEventListener("click", () => {
@@ -805,7 +884,7 @@ function initMic() {
   recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
-  recognition.lang = "en-US";
+  recognition.lang = settings.voiceInputLanguage || "en-US";
 
   recognition.onstart = () => {
     isRecording = true;
@@ -2020,9 +2099,29 @@ function updateBankListDropdown(banks) {
   });
 }
 
-// Run on page load
-window.addEventListener("DOMContentLoaded", checkAuthOnLoad);
+function updateVoiceInputLanguage(lang) {
+  settings.voiceInputLanguage = lang;
+  localStorage.setItem("settings", JSON.stringify(settings));
 
+  if (recognition) {
+    recognition.abort(); // stop any ongoing session
+    recognition = null;
+  }
+
+  initMic(); // reinitialize with new language
+}
+
+
+// Run on page load
+window.addEventListener("DOMContentLoaded", () => {
+  checkAuthOnLoad();
+
+  // Restore voice input language
+  const selector = document.getElementById("voiceInputLanguageSelector");
+  if (selector && settings.voiceInputLanguage) {
+    selector.value = settings.voiceInputLanguage;
+  }
+});
 
 </script>
 
