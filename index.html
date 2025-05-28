@@ -798,7 +798,6 @@ function initMic() {
     return;
   }
 
-  // ✅ Suppress mic sounds on Android Chrome
   const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
   const playMicSound = !isAndroidChrome;
 
@@ -815,7 +814,6 @@ function initMic() {
 
     if (playMicSound) new Audio(ASSETS.recordStart).play();
 
-    // Timeout fallback (4s)
     silenceTimer = setTimeout(() => {
       console.warn("⏱️ No speech detected — forcing stop");
       recognition.abort();
@@ -856,6 +854,13 @@ function initMic() {
       console.log("⚠️ Already recording — ignoring click");
       return;
     }
+
+    // 🔇 Stop TTS before recording starts
+    if (window.currentTTS) {
+      window.currentTTS.pause?.();
+      window.currentTTS = null;
+    }
+
     try {
       recognition.start();
     } catch (err) {
@@ -869,9 +874,13 @@ function initMic() {
 // Call this to simulate Enter key for voice submission
 function submitMicInput() {
   const inputBox = document.getElementById("userInput");
-  const event = new KeyboardEvent("keydown", { key: "Enter" });
-  inputBox.dispatchEvent(event);
+
+  setTimeout(() => {
+    const event = new KeyboardEvent("keydown", { key: "Enter" });
+    inputBox.dispatchEvent(event);
+  }, 100); // small delay to avoid audio overlap
 }
+
 
 //end of mic stuff
 
