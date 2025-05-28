@@ -439,6 +439,26 @@
     <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
     <div class="menu-option" onclick="toggleFullscreen()">Fullscreen</div>
     <div class="menu-option" onclick="quitGame()">Quit</div>
+    <div id="authSection" style="margin-top: 30px; text-align: center; font-family: inherit;">
+    <div id="loginForm" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+      <input type="text" id="username" placeholder="Username"
+            style="padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; width: 200px;">
+      <input type="password" id="password" placeholder="Password"
+            style="padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; width: 200px;">
+      <div style="display: flex; gap: 10px;">
+        <button onclick="login()" style="padding: 8px 16px; border-radius: 5px; border: none; background: #4CAF50; color: white;">Login</button>
+        <button onclick="register()" style="padding: 8px 16px; border-radius: 5px; border: none; background: #2196F3; color: white;">Register</button>
+      </div>
+      <p id="authMessage" style="color: #f44336; margin-top: 5px;"></p>
+    </div>
+
+    <div id="userOptions" style="display: none; flex-direction: column; align-items: center; margin-top: 15px;">
+      <p id="welcomeUser" style="font-weight: bold; margin-bottom: 10px;"></p>
+      <button onclick="openQuestionBank()" style="padding: 10px 20px; border: none; border-radius: 5px; background: #FF9800; color: white; margin-bottom: 10px;">📚 Manage Question Banks</button>
+      <button onclick="viewPersonalBests()" style="padding: 10px 20px; border: none; border-radius: 5px; background: #9C27B0; color: white;">🏆 View Personal Bests</button>
+    </div>
+</div>
+
   </div>
 
   <!-- Game Screen -->
@@ -1635,6 +1655,70 @@ function toggleMobileMenu() {
   const menu = document.getElementById("mobileMenuOptions");
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
+
+const API_BASE = "https://user-auth-worker.15zenderb.workers.dev/api";
+
+function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+
+  fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("username", username);
+        showUserOptions(username);
+      } else {
+        showAuthMessage("Login failed.");
+      }
+    })
+    .catch(() => showAuthMessage("Login failed."));
+}
+
+function register() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+
+  fetch(`${API_BASE}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  })
+    .then(res => {
+      if (res.ok) {
+        showAuthMessage("Registration successful. You can now log in.");
+      } else {
+        res.text().then(txt => showAuthMessage(txt));
+      }
+    })
+    .catch(() => showAuthMessage("Registration failed."));
+}
+
+function showAuthMessage(message) {
+  document.getElementById("authMessage").innerText = message;
+}
+
+function showUserOptions(username) {
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("userOptions").style.display = "flex";
+  document.getElementById("welcomeUser").innerText = `Logged in as ${username}`;
+}
+
+function checkAuthOnLoad() {
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  if (token && username) {
+    showUserOptions(username);
+  }
+}
+
+// Run on page load
+window.addEventListener("DOMContentLoaded", checkAuthOnLoad);
 
 
 </script>
