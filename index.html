@@ -314,36 +314,88 @@
         margin-bottom: 10px;
         font-size: 18px;
         color: #fff;
+        text-align: left;
+        width: 100%;
       }
 
       .styled-button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-family: inherit;
-        color: white;
-        background-color: #4CAF50; /* default green */
-        margin-bottom: 10px;
-        cursor: pointer;
-        transition: background 0.3s ease, transform 0.2s ease;
-      }
+      padding: 10px 20px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      color: #ffffff;
+      background-color: #111;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+      text-align: left;
+      width: 100%; /* Full-width for alignment */
+    }
 
-      .styled-button:hover {
-        transform: scale(1.05);
-      }
+    .styled-button:hover {
+      background-color: #1a1a1a;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
 
-      .styled-button:active {
-        transform: scale(0.98);
-      }
+    .styled-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+    }
 
-      .styled-button.danger {
-        background-color: #f44336;
-      }
+    .styled-button.danger {
+      border-color: #c62828;
+      background-color: #220000;
+      box-shadow: 0 0 10px rgba(255, 80, 80, 0.2);
+    }
 
-      .styled-button.warning {
-        background-color: #FF9800;
-      }
+    .styled-button.danger:hover {
+      background-color: #2a0000;
+      box-shadow: 0 0 15px rgba(255, 80, 80, 0.4);
+    }
+
+    .styled-button.warning {
+      border-color: #ffa726;
+      background-color: #2b1a00;
+      box-shadow: 0 0 10px rgba(255, 153, 0, 0.2);
+    }
+
+    .styled-button.warning:hover {
+      background-color: #3a2500;
+      box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+    }
+
+    .menu-option {
+      font-size: 14px;
+      color: #ffffff;
+      background-color: #111;
+      padding: 12px 20px;
+      margin: 5px 0;
+      border: 1px solid #444;
+      border-radius: 8px;
+      text-align: left;
+      width: 70%;
+      max-width: 300px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+    }
+
+    .menu-option:hover {
+      background-color: #1a1a1a;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      transform: scale(1.03);
+    }
+
+    .menu-option:active {
+      transform: scale(0.98);
+    }
+
+
 
     
       /* MOBILE STYLES (already working well) */
@@ -503,10 +555,10 @@
   <!-- Menu Screen -->
   <div id="menuScreen" class="screen menu" style="display: flex; align-items: flex-start; justify-content: flex-start; text-align: left; padding: 20px; gap: 10px; flex-direction: column;">
     <h1>Galactic Recall Quiz Game</h1>
-    <div class="menu-option" onclick="showScreen('gameScreen')">Start Game</div>
-    <div class="menu-option" onclick="showScreen('settingsScreen')">Settings</div>
-    <div class="menu-option" onclick="toggleFullscreen()">Fullscreen</div>
-    <div class="menu-option" onclick="quitGame()">Quit</div>
+    <div class="menu-option" onclick="showScreen('gameScreen')">🚀 Start Game</div>
+    <div class="menu-option" onclick="showScreen('settingsScreen')">⚙️ Settings</div>
+    <div class="menu-option" onclick="toggleFullscreen()">🖥️ Fullscreen</div>
+    <div class="menu-option" onclick="quitGame()">❌ Quit</div>
     <div id="authSection" style="margin-top: 30px; text-align: center; font-family: inherit;">
     <div id="loginForm" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
       <input type="text" id="username" placeholder="Username"
@@ -808,9 +860,6 @@ let fallSpeedSliderPercent = 50; // default slider percent (0–100)
 let gameInputFocusHandler = null;
 let questionAnswered = false;
 
-
-const correctSound = new Audio(ASSETS.correct);
-const incorrectSound = new Audio(ASSETS.incorrect);
 const savedLang = localStorage.getItem("ttsLanguage");
 
 const API_BASE = "https://user-auth-worker.15zenderb.workers.dev/api";
@@ -828,8 +877,14 @@ let ambianceUnlocked = false;
 
 document.body.addEventListener("click", () => {
   if (!ambianceUnlocked) {
+    const keysToUnlock = ['correct', 'incorrect', 'win', 'explosion', 'soundPause', 'soundUnpause'];
+    for (const key of keysToUnlock) {
+      const s = new Audio(ASSETS[key]);
+      s.play().then(() => s.pause()).catch(() => {});
+    }
+
     ambiance.play().then(() => {
-      ambiance.pause(); // unlock, but pause immediately
+      ambiance.pause();
       ambianceUnlocked = true;
     }).catch(() => {});
   }
@@ -1150,14 +1205,14 @@ function pauseGame() {
   isPaused = true;
   document.getElementById("gameScreen").style.display = "none";
   document.getElementById("pauseScreen").style.display = "flex";
-  pauseSound.play();
+  new Audio(ASSETS.soundPause).play().catch(() => {});
 }
 
 function resumeGame() {
   isPaused = false;
   document.getElementById("pauseScreen").style.display = "none";
   document.getElementById("gameScreen").style.display = "flex";
-  unpauseSound.play();
+  new Audio(ASSETS.soundUnpause).play().catch(() => {});
   const inputBox = document.getElementById("userInput");
   if (inputBox) inputBox.focus();
   requestAnimationFrame(updateAsteroids);
@@ -1470,8 +1525,7 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
       }
 
       try {
-        correctSound.currentTime = 0;
-        correctSound.play().catch(err => {
+        new Audio(ASSETS.correct).play().catch(err => {
           console.warn("🔇 Correct sound failed:", err);
         });
       } catch (e) {
@@ -1509,8 +1563,7 @@ document.getElementById("userInput").addEventListener("keydown", function (e) {
       }
 
       try {
-        incorrectSound.currentTime = 0;
-        incorrectSound.play().catch(err => {
+        new Audio(ASSETS.incorrect).play().catch(err => {
           console.warn("🔇 Incorrect sound failed:", err);
         });
       } catch (e) {
@@ -1734,10 +1787,6 @@ function showOverlay({ title, message, titleColor = "red" }, callback) {
 function showCSVHelp() {
   alert("Your CSV file should have two columns, formatted like this:\n\nWhat is 2+2?,4\nCapital of France?,Paris");
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  initMic();
-});
 
 
 function showQuestionData() {
@@ -2115,6 +2164,7 @@ function updateVoiceInputLanguage(lang) {
 // Run on page load
 window.addEventListener("DOMContentLoaded", () => {
   checkAuthOnLoad();
+  initMic();
 
   // Restore voice input language
   const selector = document.getElementById("voiceInputLanguageSelector");
