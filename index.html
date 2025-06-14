@@ -1311,7 +1311,8 @@ function updateAsteroids() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!asteroid) {
-    asteroid = createAsteroid();
+    const q = getNextQuestion();
+    asteroid = createAsteroid(q);
   }
 
   asteroid.y += asteroid.speed;
