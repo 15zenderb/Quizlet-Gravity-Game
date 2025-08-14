@@ -1708,7 +1708,7 @@ function skipQuestion() {
     window.currentTTS = null;
   }
 
-  incorrectSound.play();
+  new Audio(ASSETS.incorrectSound).play();
   score -= 1;
   document.getElementById("score").innerText = score;
 
@@ -2178,3 +2178,4 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 </html>
+
