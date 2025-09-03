@@ -1,0 +1,53 @@
+Maximum 90 degree crosswind for takeoff and landing,27
+Maximum 90 degree crosswind for landing from a Category II Approach,15
+Maximum headwind for landing from a Category II Approach,16
+Maximum direct tailwind for takeoff and landing,10
+Maximum operating altitude <-701> <-900>,41000
+Maximum Taxi and Ramp Weight <-701>,75250
+Maximum Takeoff Weight <-701>,75000
+Maximum Landing Weight <-701>,67000
+Maximum Zero Fuel Weight <-701>,62300
+Maximum Taxi and Ramp Weight <-900>,85000
+Maximum Takeoff Weight <-900>,84500
+Maximum Landing Weight <-900>,75100
+Maximum Zero Fuel Weight <-900>,70750
+Maximum gear extension speed,220
+Maximum gear extended speed,220
+Maximum gear retraction speed,200
+Maximum airspeed for windshield wiper operation,250
+Flaps 1,230
+Flaps 8,230
+Flaps 20,220
+Flaps 30,185
+Flaps 45,170
+ITT must be below °C before attempting to ground start engine,120
+ITT must be below °C before attempting to airstart engine,90
+Steady-state idle psi minimum,25
+Takeoff Power psi minimum,45
+Maximum permissible fuel imbalance for Takeoff,300
+Maximum permissible fuel imbalance for all other phases of flight,800
+Bleed air extraction from the APU is not permitted above,25000
+With the APU door not closed or the door position is unknown,220
+Operation with the autopilot engaged is prohibited at altitudes below,600
+For visual and non-precision approaches the minimum height for autopilot use is,400
+For precision approaches (PAR/ILS) the minimum height for autopilot use is,80
+<-900> For precision approaches (PAR/ILS) or approach procedures with vertical guidance the minimum height for autopilot use with one engine operating is,110
+To protect the flight compartment CRT displays the maximum permissible time for ground operations with DC power only is minutes,5
+Maximum slats and/or flaps extended altitude,15000
+Minimum altitude for flight spoiler deployment,1000
+To ensure adequate maneuver margins flight spoilers must not be extended inflight at airspeeds below the recommended reference speed plus KIAS,10
+During landing maximum reverse thrust is prohibited below KIAS,75
+During landing reverse idle should be achieved by KIAS,60
+The taxi lights must be switched OFF whenever the airplane is stationary in excess of minutes,10
+Minimum brake cooling time is minutes,15
+Operate engines at or near idle for minutes prior to shutdown,2
+During all starts do not exceed % N1 for 2 minutes after start,75
+Takeoff with a fuel load in excess of lbs. in the center tank is not permitted unless each wing tank is above 4400 lbs.,500
+Maximum altitude for single pack operation,31000
+Maximum AC electrical load on the Engine or APU driven generator kVA,40
+Maximum DC electrical load on each TRU Amps,120
+Maximum Fuel Quantity Pressure refueling (700/900),19594
+Maximum Fuel Quantity Gravity refueling (700),14580
+Maximum Fuel Quantity Gravity refueling (900),14810
+Minimum fuel quantity for go-around per wing tank,600
+Turbulence Penetration Speed KIAS or .75M whichever is lower,280
